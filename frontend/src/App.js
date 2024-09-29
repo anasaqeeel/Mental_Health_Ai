@@ -51,6 +51,8 @@ function App() {
               }
             />
 
+            {/* code ka rape hogeya ha bhai */}
+            {/* billi ny waja nhi btai */}
             {/* Add other protected routes similarly */}
           </Routes>
         </Router>
