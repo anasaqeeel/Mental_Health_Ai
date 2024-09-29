@@ -51,8 +51,11 @@ function App() {
               }
             />
 
-            
-           {/* hjk */}
+
+            {/* hjk */}
+            {/* hjk ko mn gand mn lu? */}
+            {/* pen di chooli yawa */}
+
           </Routes>
         </Router>
       </AuthProvider>
