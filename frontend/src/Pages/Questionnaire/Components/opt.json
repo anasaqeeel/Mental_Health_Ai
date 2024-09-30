@@ -1,0 +1,11 @@
+[
+    ["Student Counseling", "Group Counseling", "Adult Counseling", "Something Else"],
+    ["Excellent", "Good", "Fair", "Poor"],
+    ["Excellent", "Good", "Fair", "Poor"],
+    ["Male", "Female", "Prefer Not To Disclose", "Other"],
+    ["Male", "Female", "Prefer Not To Disclose", "Not Sure"],
+    [],  
+    ["English", "Hindi", "Punjabi", "Bengali", "Urdu", "Kannada", "Telugu", "Marathi", "Malayalam"],
+    []   
+  ]
+  

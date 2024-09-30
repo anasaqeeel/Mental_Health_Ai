@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProgressBar, Button, Form, Alert } from 'react-bootstrap';
 import '../Styles/questions.styles.css';
 import DatePicker from 'react-datepicker';
@@ -6,49 +6,30 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
-const Questionnaire = ({ userId }) => {
-  const navigate = useNavigate(); // Initialize useNavigate
-
-  const questions = [
-    "What type of therapy do you want?",
-    "How would you rate your sleeping habits?",
-    "How is your physical health?",
-    "What is your gender?",
-    "What gender do you prefer in a mental health provider?",
-    "What is your date of birth?",
-    "What is your preferred language?",
-    "Do you have any additional comments or concerns?"  // New question
-  ];
-
-  const options = [
-    ["Student Counseling", "Group Counseling", "Adult Counseling", "Something Else"], // q1
-    ["Excellent", "Good", "Fair", "Poor"], // q2
-    ["Excellent", "Good", "Fair", "Poor"], // q3
-    ["Male", "Female", "Prefer Not To Disclose", "Other"], // q4
-    ["Male", "Female", "Prefer Not To Disclose", "Not Sure"], // q5
-    [], // q6: uses DatePicker, so no options needed
-    ["English", "Hindi", "Punjabi", "Bengali", "Urdu", "Kannada", "Telugu", "Marathi", "Malayalam"], // q7
-    []  // q8: Textarea question, so no options needed
-  ];
+const Questionnaire = ({ questions, options, userId }) => {
+  const navigate = useNavigate();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState(Array(questions.length).fill(''));
   const [dateOfBirth, setDateOfBirth] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
 
+  useEffect(() => {
+    console.log("Updated dateOfBirth:", dateOfBirth);
+  }, [dateOfBirth]);
   const handleNext = () => {
-    if (questions[currentStep] === "What is your date of birth?") {
-      if (!dateOfBirth) {
-        setShowAlert(true);
-        return;
-      }
-    } else {
-      if (!answers[currentStep] && currentStep !== questions.length - 1) {
-        setShowAlert(true);
-        return;
-      }
+    console.log({ dateOfBirth });
+    console.log(questions[currentStep]);
+    if (dateOfBirth === null && questions[currentStep] === "What is your date of birth?") {
+      console.log({ dateOfBirth });
+      setShowAlert(true);
+      return;
+    } else if (!answers[currentStep] && questions[currentStep] !== "What is your date of birth?" && currentStep !== questions.length - 1) {
+      console.log("hello")
+      setShowAlert(true);
+      return;
     }
-    
+
     setShowAlert(false);
     if (currentStep < questions.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -68,7 +49,6 @@ const Questionnaire = ({ userId }) => {
   };
 
   const handleSubmit = async () => {
-    // Validation
     if (!answers[currentStep] && questions[currentStep] !== "What is your date of birth?" && currentStep !== questions.length - 1) {
       setShowAlert(true);
       return;
@@ -81,9 +61,8 @@ const Questionnaire = ({ userId }) => {
 
     setShowAlert(false);
 
-    // Prepare the data to send to the backend
     const data = {
-      user: userId || "1",  // <-- Use passed userId or default to "1"
+      user: userId || "1",
       typeOfTherapy: answers[0],
       sleepingHabits: answers[1],
       physicalHealth: answers[2],
@@ -104,14 +83,9 @@ const Questionnaire = ({ userId }) => {
       });
 
       if (response.ok) {
-        const result = await response.json();
-        console.log("Questionnaire submitted successfully!");
-        // Redirect to the new page with top 3 matched professionals
-        // navigate(`/matched-professionals/${result.id}`); // Assuming result.id is the questionnaire ID
         navigate(`/matched-professionals`);
       } else {
-        const errorData = await response.json();
-        console.error("Failed to submit the questionnaire", errorData);
+        console.error("Failed to submit the questionnaire");
       }
     } catch (error) {
       console.error("Error:", error);
@@ -125,7 +99,11 @@ const Questionnaire = ({ userId }) => {
           <Form.Label>{questions[currentStep]}</Form.Label>
           <DatePicker
             selected={dateOfBirth}
-            onChange={(date) => setDateOfBirth(date)}
+            onChange={(date) => {
+              setDateOfBirth(date);
+              console.log("Selected Date:", date);
+            }}
+
             dateFormat="dd/MM/yyyy"
             placeholderText="dd/mm/yyyy"
             className="form-control"
@@ -165,24 +143,24 @@ const Questionnaire = ({ userId }) => {
 
   return (
     <div className='question-container'>
-      <div className="form-body" style={{ maxWidth: '1000px'}}>
-        <center><h1 style={{padding:"2rem"}}>Questionnaire</h1></center>
-        <p style={{padding:"2rem"}}>Just answer some simple questions for us to get to know you better :)</p>
+      <div className="form-body" style={{ maxWidth: '1000px' }}>
+        <center><h1 style={{ padding: "2rem" }}>Questionnaire</h1></center>
+        <p style={{ padding: "2rem" }}>Just answer some simple questions for us to get to know you better :)</p>
         <ProgressBar now={(currentStep + 1) / questions.length * 100} />
-        
+
         {showAlert && (
           <Alert variant="danger" onClose={() => setShowAlert(false)} dismissible>
             Please answer the question before proceeding.
           </Alert>
         )}
-        
+
         <Form>
-          <div style={{padding:"2rem"}}>
+          <div style={{ padding: "2rem" }}>
             {renderQuestion()}
           </div>
         </Form>
-        
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', padding:"2rem" }}>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', padding: "2rem" }}>
           <Button variant="secondary" onClick={handleBack} disabled={currentStep === 0}>
             Back
           </Button>

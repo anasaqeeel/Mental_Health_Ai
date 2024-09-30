@@ -13,6 +13,8 @@ import Footer from './Pages/Landing/Components/Footer';
 import MHProfessional from './Pages/MH_Professional';
 import { AuthProvider } from './Pages/Login/Components/AuthContext';
 import PrivateRoute from './Components/PrivateRoute';
+import questions from './Pages/Questionnaire/Components/quest.json';
+import options from './Pages/Questionnaire/Components/opt.json';
 
 function App() {
   return (
@@ -45,7 +47,7 @@ function App() {
               element={
                 <PrivateRoute>
                   <TopNav />
-                  <Questionnaire />
+                  <Questionnaire questions={questions} options={options}/>
                   <Footer />
                 </PrivateRoute>
               }

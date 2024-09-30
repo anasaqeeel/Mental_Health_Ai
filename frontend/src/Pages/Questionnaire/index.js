@@ -1,9 +1,9 @@
 import React from 'react'
 import Questionnaire from './Components/Questions'
-export default function index() {
+export default function index({ questions, options, userId }) {
   return (
     <div>
-      <Questionnaire/>
+      <Questionnaire questions={questions} options={options}/>
     </div>
   )
 }
