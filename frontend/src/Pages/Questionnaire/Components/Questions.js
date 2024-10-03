@@ -6,11 +6,14 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
-const Questionnaire = ({ questions, options, userId }) => {
+import questionsData from './quest.json';
+
+const Questionnaire = ({ questionnaireName, userId }) => {
+  const selectedData = questionsData[questionnaireName];
   const navigate = useNavigate();
 
   const [currentStep, setCurrentStep] = useState(0);
-  const [answers, setAnswers] = useState(Array(questions.length).fill(''));
+  const [answers, setAnswers] = useState(Array(selectedData.questions.length).fill(''));
   const [dateOfBirth, setDateOfBirth] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
 
@@ -19,19 +22,19 @@ const Questionnaire = ({ questions, options, userId }) => {
   }, [dateOfBirth]);
   const handleNext = () => {
     console.log({ dateOfBirth });
-    console.log(questions[currentStep]);
-    if (dateOfBirth === null && questions[currentStep] === "What is your date of birth?") {
+    console.log(selectedData.questions[currentStep]);
+    if (dateOfBirth === null && selectedData.questions[currentStep] === "What is your date of birth?") {
       console.log({ dateOfBirth });
       setShowAlert(true);
       return;
-    } else if (!answers[currentStep] && questions[currentStep] !== "What is your date of birth?" && currentStep !== questions.length - 1) {
+    } else if (!answers[currentStep] && selectedData.questions[currentStep] !== "What is your date of birth?" && currentStep !== selectedData.questions.length - 1) {
       console.log("hello")
       setShowAlert(true);
       return;
     }
 
     setShowAlert(false);
-    if (currentStep < questions.length - 1) {
+    if (currentStep < selectedData.questions.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -49,12 +52,12 @@ const Questionnaire = ({ questions, options, userId }) => {
   };
 
   const handleSubmit = async () => {
-    if (!answers[currentStep] && questions[currentStep] !== "What is your date of birth?" && currentStep !== questions.length - 1) {
+    if (!answers[currentStep] && selectedData.questions[currentStep] !== "What is your date of birth?" && currentStep !== selectedData.questions.length - 1) {
       setShowAlert(true);
       return;
     }
 
-    if (questions[currentStep] === "What is your date of birth?" && !dateOfBirth) {
+    if (selectedData.questions[currentStep] === "What is your date of birth?" && !dateOfBirth) {
       setShowAlert(true);
       return;
     }
@@ -93,10 +96,10 @@ const Questionnaire = ({ questions, options, userId }) => {
   };
 
   const renderQuestion = () => {
-    if (questions[currentStep] === "What is your date of birth?") {
+    if (selectedData.questions[currentStep] === "What is your date of birth?") {
       return (
         <div>
-          <Form.Label>{questions[currentStep]}</Form.Label>
+          <Form.Label>{selectedData.questions[currentStep]}</Form.Label>
           <DatePicker
             selected={dateOfBirth}
             onChange={(date) => {
@@ -110,10 +113,10 @@ const Questionnaire = ({ questions, options, userId }) => {
           />
         </div>
       );
-    } else if (questions[currentStep] === "Do you have any additional comments or concerns?") {
+    } else if (selectedData.questions[currentStep] === "Do you have any additional comments or concerns?") {
       return (
         <Form.Group controlId={`question-${currentStep}`}>
-          <Form.Label>{questions[currentStep]}</Form.Label>
+          <Form.Label>{selectedData.questions[currentStep]}</Form.Label>
           <Form.Control
             as="textarea"
             rows={3}
@@ -125,14 +128,14 @@ const Questionnaire = ({ questions, options, userId }) => {
     } else {
       return (
         <Form.Group controlId={`question-${currentStep}`}>
-          <Form.Label>{questions[currentStep]}</Form.Label>
+          <Form.Label>{selectedData.questions[currentStep]}</Form.Label>
           <Form.Control
             as="select"
             value={answers[currentStep]}
             onChange={handleInputChange}
           >
             <option value="">Select an option</option>
-            {options[currentStep].map((option, index) => (
+            {selectedData.options[currentStep].map((option, index) => (
               <option key={index} value={option}>{option}</option>
             ))}
           </Form.Control>
@@ -146,7 +149,7 @@ const Questionnaire = ({ questions, options, userId }) => {
       <div className="form-body" style={{ maxWidth: '1000px' }}>
         <center><h1 style={{ padding: "2rem" }}>Questionnaire</h1></center>
         <p style={{ padding: "2rem" }}>Just answer some simple questions for us to get to know you better :)</p>
-        <ProgressBar now={(currentStep + 1) / questions.length * 100} />
+        <ProgressBar now={(currentStep + 1) / selectedData.questions.length * 100} />
 
         {showAlert && (
           <Alert variant="danger" onClose={() => setShowAlert(false)} dismissible>
@@ -164,7 +167,7 @@ const Questionnaire = ({ questions, options, userId }) => {
           <Button variant="secondary" onClick={handleBack} disabled={currentStep === 0}>
             Back
           </Button>
-          {currentStep === questions.length - 1 ? (
+          {currentStep === selectedData.questions.length - 1 ? (
             <Button variant="primary" onClick={handleSubmit}>
               Submit
             </Button>

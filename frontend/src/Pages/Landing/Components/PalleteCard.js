@@ -14,7 +14,7 @@ export default function PalleteCard(props) {
         <Card.Text>
             {props.desc}
         </Card.Text>
-        <Link to='questionnaire'><Button variant="primary">Get Started</Button></Link>
+        <Link to={props.url}><Button variant="primary">Get Started</Button></Link>
       </Card.Body>
     </Card>
     </div>

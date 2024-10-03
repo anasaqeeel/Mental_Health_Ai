@@ -1,11 +1,144 @@
-[
-    "What type of therapy do you want?",
-    "How would you rate your sleeping habits?",
-    "How is your physical health?",
-    "What is your gender?",
-    "What gender do you prefer in a mental health provider?",
-    "What is your date of birth?",
-    "What is your preferred language?",
-    "Do you have any additional comments or concerns?"
-]
-  
+{
+  "personal": {
+    "questions": [
+      "What type of therapy do you want?",
+      "How would you rate your sleeping habits?",
+      "How is your physical health?",
+      "What is your gender?",
+      "What gender do you prefer in a mental health provider?",
+      "What is your date of birth?",
+      "What is your preferred language?",
+      "Do you have any additional comments or concerns?"
+    ],
+    "options": [
+      ["Student Counseling", "Group Counseling", "Adult Counseling", "Something Else"],
+      ["Excellent", "Good", "Fair", "Poor"],
+      ["Excellent", "Good", "Fair", "Poor"],
+      ["Male", "Female", "Prefer Not To Disclose", "Other"],
+      ["Male", "Female", "Prefer Not To Disclose", "Not Sure"],
+      [],
+      ["English", "Hindi", "Punjabi", "Bengali", "Urdu", "Kannada", "Telugu", "Marathi", "Malayalam"],
+      []
+    ]
+  },
+  "BFT": {
+    "questions": [
+      "Talks a lot",
+      "Notices other people’s weak points",
+      "Does things carefully and completely",
+      "Is sad, depressed",
+      "Is original, comes up with new ideas",
+      "Keeps their thoughts to themselves",
+      "Is helpful and not selfish with others",
+      "Can be kind of careless",
+      "Is relaxed, handles stress well",
+      "Is curious about lots of different things"
+    ],
+    "options": [
+      ["Disagree alot 1", "2", "3", "4", "Agree alot 5"],
+      ["Disagree alot 1", "2", "3", "4", "Agree alot 5"],
+      ["Disagree alot 1", "2", "3", "4", "Agree alot 5"],
+      ["Disagree alot 1", "2", "3", "4", "Agree alot 5"],
+      ["Disagree alot 1", "2", "3", "4", "Agree alot 5"],
+      ["Disagree alot 1", "2", "3", "4", "Agree alot 5"],
+      ["Disagree alot 1", "2", "3", "4", "Agree alot 5"],
+      ["Disagree alot 1", "2", "3", "4", "Agree alot 5"],
+      ["Disagree alot 1", "2", "3", "4", "Agree alot 5"],
+      ["Disagree alot 1", "2", "3", "4", "Agree alot 5"]
+    ]
+  },
+  "Enneagram": {
+    "questions": [
+      "Creative and have an artistic view of life.",
+      "Feel different from others, as if “on the outside looking in.”",
+      "Tend to experience more melancholy than most people I know.",
+      "Tend to be overly sensitive.",
+      "Feel that something is missing in my life.",
+      "Feel envious of other people’s relationships, lifestyles, and accomplishments.",
+      "Thrive in environments where I can express my creativity.",
+      "When misunderstood, can become withdrawn, self-conscious, and/or rebellious.",
+      "Tend to be romantic and long for the great love of my life to come along.",
+      "Can be caught in a fantasy world of romance and imagination.",
+      "Enjoy having elegant, refined, unique things that no one else has. Attracted to what is intense and out of the ordinary.",
+      "Tend to be moody, withdrawn, and self-absorbed when stressed. Tend to be compassionate, expressive, and supportive when not stressed. Can be deeply hurt by the slightest criticism.",
+      "Tend to be reflective and to search for the meaning of my life.",
+      "Strive to be unique and have done things to avoid being ordinary.",
+      "Manners and good taste are extremely important to me.",
+      "People have seen me as overly dramatic.",
+      "Believe it is important to understand my own and other people’s feelings."
+    ],
+    "options": [
+      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
+      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
+      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
+      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
+      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
+      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
+      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
+      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
+      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
+      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
+      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
+      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
+      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
+      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
+      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
+      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
+      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"]
+    ]
+  },
+  "MMPI2": {
+    "questions": [
+      "I rarely worry about my health.",
+      "I always tell the truth.",
+      "I feel tired most of the time.",
+      "I feel that I have often been punished without cause.",
+      "I am bothered by an upset stomach several times a week.",
+      "I get a lot of headaches.",
+      "I like to arrange flowers.",
+      "Someone has it in for me.",
+      "I often have disturbing thoughts I can't get rid of.",
+      "I hear things other people can't hear.",
+      "I am happier than most people.",
+      "I am easily embarrassed."
+    ],
+    "options": [
+      ["Yes", "No"],
+      ["Yes", "No"],
+      ["Yes", "No"],
+      ["Yes", "No"],
+      ["Yes", "No"],
+      ["Yes", "No"],
+      ["Yes", "No"],
+      ["Yes", "No"],
+      ["Yes", "No"],
+      ["Yes", "No"],
+      ["Yes", "No"],
+      ["Yes", "No"]
+    ]
+  },
+  "NPQ": {
+    "questions": [
+      "I often feel dependent on others.",
+      "I avoid situations where I have to make decisions independently.",
+      "I often feel weak or tired for no clear reason.",
+      "I find it difficult to concentrate on tasks.",
+      "I frequently feel dissatisfied with myself.",
+      "I consider myself a failure compared to others.",
+      "I have trouble controlling my temper.",
+      "I often hesitate when making decisions.",
+      "I rely on others to help me decide important matters."
+    ],
+    "options": [
+      ["Yes", "No"],
+      ["Yes", "No"],
+      ["Yes", "No"],
+      ["Yes", "No"],
+      ["Yes", "No"],
+      ["Yes", "No"],
+      ["Yes", "No"],
+      ["Yes", "No"],
+      ["Yes", "No"]
+    ]
+  }
+}

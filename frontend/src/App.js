@@ -47,16 +47,22 @@ function App() {
               element={
                 <PrivateRoute>
                   <TopNav />
-                  <Questionnaire questions={questions} options={options}/>
+                  <Questionnaire questionnaireName="personal"/>
+                  <Footer />
+                </PrivateRoute>
+              }
+            />
+             <Route
+              path="/landing/BFT"
+              element={
+                <PrivateRoute>
+                  <TopNav />
+                  <Questionnaire questionnaireName="BFT"/>
                   <Footer />
                 </PrivateRoute>
               }
             />
 
-
-            {/* hjk */}
-            {/* hjk ko mn gand mn lu? */}
-            {/* pen di chooli yawa */}
 
           </Routes>
         </Router>

@@ -19,9 +19,10 @@ export default function SelectionPallete() {
             </div>
             
             <div className="card-grid">
-                <PalleteCard title={"Personal Counseling"} desc={"Individual Counseling for Adults"} img={personalImg}/>
-                <PalleteCard title={"Group Counseling"} desc={"Counseling for Groups"} img={teenImg}/>
-                <PalleteCard title={"Student Counseling"} desc={"Counseling for students"} img={studentImg}/>
+                <PalleteCard title={"Personal Counseling"} desc={"Individual Counseling for Adults"} img={personalImg} url={"questionnaire"}/>
+                <PalleteCard title={"Group Counseling"} desc={"Counseling for Groups"} img={teenImg} url={"questionnaire"}/>
+                <PalleteCard title={"Student Counseling"} desc={"Counseling for students"} img={studentImg} url={"questionnaire"}/>
+                <PalleteCard title={"BFT Counseling"} desc={"Counseling for students"} img={studentImg} url={"BFT"}/>
             </div>
         </div>
     </div>
