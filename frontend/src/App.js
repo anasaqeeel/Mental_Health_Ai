@@ -13,6 +13,9 @@ import Footer from './Pages/Landing/Components/Footer';
 import MHProfessional from './Pages/MH_Professional';
 import { AuthProvider } from './Pages/Login/Components/AuthContext';
 import PrivateRoute from './Components/PrivateRoute';
+import questions from './Pages/Questionnaire/Components/Questions';
+import options from './Pages/Questionnaire/Components/Questions';
+import VideoChat from './Pages/VideoChat/VideoChat'
 
 function App() {
   return (
@@ -45,14 +48,25 @@ function App() {
               element={
                 <PrivateRoute>
                   <TopNav />
-                  <Questionnaire />
+                  <Questionnaire questions={questions} options={options} />
                   <Footer />
                 </PrivateRoute>
               }
             />
 
-            
-           
+            {/* Video Chat Route */}
+            <Route
+              path="/landing/video-chat"
+              element={
+                <PrivateRoute>
+                  <TopNav />
+                  <VideoChat />
+                  <Footer />
+                </PrivateRoute>
+              }
+            />
+
+
           </Routes>
         </Router>
       </AuthProvider>
