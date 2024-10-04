@@ -13,9 +13,9 @@ import Footer from './Pages/Landing/Components/Footer';
 import MHProfessional from './Pages/MH_Professional';
 import { AuthProvider } from './Pages/Login/Components/AuthContext';
 import PrivateRoute from './Components/PrivateRoute';
-import questions from './Pages/Questionnaire/Components/quest.json';
-import options from './Pages/Questionnaire/Components/opt.json';
-
+// import questions from './Pages/Questionnaire/Components/quest.json';
+// import options from './Pages/Questionnaire/Components/opt.json';
+import Multipage from './Pages/multiquestion/component/multipage';
 function App() {
   return (
     <div className="App">
@@ -53,11 +53,131 @@ function App() {
               }
             />
              <Route
-              path="/landing/BFT"
+              path="/landing/SRT"
+              element={
+                <PrivateRoute>
+                  <TopNav />
+                  <Multipage test="self-report"/>
+                  <Footer />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/landing/SRT/ADHD"
+              element={
+                <PrivateRoute>
+                  <TopNav />
+                  <Questionnaire questionnaireName="ADHD"/>
+                  <Footer />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/landing/SRT/BDI"
+              element={
+                <PrivateRoute>
+                  <TopNav />
+                  <Questionnaire questionnaireName="BDI"/>
+                  <Footer />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/landing/SRT/OCIR"
+              element={
+                <PrivateRoute>
+                  <TopNav />
+                  <Questionnaire questionnaireName="OCIR"/>
+                  <Footer />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/landing/SRT/MDQ"
+              element={
+                <PrivateRoute>
+                  <TopNav />
+                  <Questionnaire questionnaireName="MDQ"/>
+                  <Footer />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/landing/SRT/GAD"
+              element={
+                <PrivateRoute>
+                  <TopNav />
+                  <Questionnaire questionnaireName="GAD"/>
+                  <Footer />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/landing/PT"
+              element={
+                <PrivateRoute>
+                  <TopNav />
+                  <Multipage test="PT"/>
+                  <Footer />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/landing/PT/BFT"
               element={
                 <PrivateRoute>
                   <TopNav />
                   <Questionnaire questionnaireName="BFT"/>
+                  <Footer />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/landing/PT/MMPI"
+              element={
+                <PrivateRoute>
+                  <TopNav />
+                  <Questionnaire questionnaireName="MMPI2"/>
+                  <Footer />
+                </PrivateRoute>
+              }
+            />
+            {/* <Route
+              path="/landing/PT/BFT"
+              element={
+                <PrivateRoute>
+                  <TopNav />
+                  <Questionnaire questionnaireName="BFT"/>
+                  <Footer />
+                </PrivateRoute>
+              }
+            /> */}
+            <Route
+              path="/landing/PT/NPQ"
+              element={
+                <PrivateRoute>
+                  <TopNav />
+                  <Questionnaire questionnaireName="NPQ"/>
+                  <Footer />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/landing/PT/ENNEAGRAM"
+              element={
+                <PrivateRoute>
+                  <TopNav />
+                  <Questionnaire questionnaireName="ENNEAGRAM"/>
+                  <Footer />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/landing/PT/IBT"
+              element={
+                <PrivateRoute>
+                  <TopNav />
+                  <Questionnaire questionnaireName="IBT"/>
                   <Footer />
                 </PrivateRoute>
               }

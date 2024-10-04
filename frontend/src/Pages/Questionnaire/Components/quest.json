@@ -11,13 +11,48 @@
       "Do you have any additional comments or concerns?"
     ],
     "options": [
-      ["Student Counseling", "Group Counseling", "Adult Counseling", "Something Else"],
-      ["Excellent", "Good", "Fair", "Poor"],
-      ["Excellent", "Good", "Fair", "Poor"],
-      ["Male", "Female", "Prefer Not To Disclose", "Other"],
-      ["Male", "Female", "Prefer Not To Disclose", "Not Sure"],
+      [
+        "Student Counseling",
+        "Group Counseling",
+        "Adult Counseling",
+        "Something Else"
+      ],
+      [
+        "Excellent",
+        "Good",
+        "Fair",
+        "Poor"
+      ],
+      [
+        "Excellent",
+        "Good",
+        "Fair",
+        "Poor"
+      ],
+      [
+        "Male",
+        "Female",
+        "Prefer Not To Disclose",
+        "Other"
+      ],
+      [
+        "Male",
+        "Female",
+        "Prefer Not To Disclose",
+        "Not Sure"
+      ],
       [],
-      ["English", "Hindi", "Punjabi", "Bengali", "Urdu", "Kannada", "Telugu", "Marathi", "Malayalam"],
+      [
+        "English",
+        "Hindi",
+        "Punjabi",
+        "Bengali",
+        "Urdu",
+        "Kannada",
+        "Telugu",
+        "Marathi",
+        "Malayalam"
+      ],
       []
     ]
   },
@@ -35,19 +70,79 @@
       "Is curious about lots of different things"
     ],
     "options": [
-      ["Disagree alot 1", "2", "3", "4", "Agree alot 5"],
-      ["Disagree alot 1", "2", "3", "4", "Agree alot 5"],
-      ["Disagree alot 1", "2", "3", "4", "Agree alot 5"],
-      ["Disagree alot 1", "2", "3", "4", "Agree alot 5"],
-      ["Disagree alot 1", "2", "3", "4", "Agree alot 5"],
-      ["Disagree alot 1", "2", "3", "4", "Agree alot 5"],
-      ["Disagree alot 1", "2", "3", "4", "Agree alot 5"],
-      ["Disagree alot 1", "2", "3", "4", "Agree alot 5"],
-      ["Disagree alot 1", "2", "3", "4", "Agree alot 5"],
-      ["Disagree alot 1", "2", "3", "4", "Agree alot 5"]
+      [
+        "Disagree alot 1",
+        "2",
+        "3",
+        "4",
+        "Agree alot 5"
+      ],
+      [
+        "Disagree alot 1",
+        "2",
+        "3",
+        "4",
+        "Agree alot 5"
+      ],
+      [
+        "Disagree alot 1",
+        "2",
+        "3",
+        "4",
+        "Agree alot 5"
+      ],
+      [
+        "Disagree alot 1",
+        "2",
+        "3",
+        "4",
+        "Agree alot 5"
+      ],
+      [
+        "Disagree alot 1",
+        "2",
+        "3",
+        "4",
+        "Agree alot 5"
+      ],
+      [
+        "Disagree alot 1",
+        "2",
+        "3",
+        "4",
+        "Agree alot 5"
+      ],
+      [
+        "Disagree alot 1",
+        "2",
+        "3",
+        "4",
+        "Agree alot 5"
+      ],
+      [
+        "Disagree alot 1",
+        "2",
+        "3",
+        "4",
+        "Agree alot 5"
+      ],
+      [
+        "Disagree alot 1",
+        "2",
+        "3",
+        "4",
+        "Agree alot 5"
+      ],
+      [
+        "Disagree alot 1",
+        "2",
+        "3",
+        "4",
+        "Agree alot 5"
+      ]
     ]
   },
-  "Enneagram": {
+  "ENNEAGRAM": {
     "questions": [
       "Creative and have an artistic view of life.",
       "Feel different from others, as if “on the outside looking in.”",
@@ -68,23 +163,125 @@
       "Believe it is important to understand my own and other people’s feelings."
     ],
     "options": [
-      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
-      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
-      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
-      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
-      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
-      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
-      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
-      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
-      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
-      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
-      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
-      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
-      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
-      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
-      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
-      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"],
-      ["Almost Never 1", "Rarely 2", "Sometimes 3", "Frequently 4", "Almost Always 5"]
+      [
+        "Almost Never 1",
+        "Rarely 2",
+        "Sometimes 3",
+        "Frequently 4",
+        "Almost Always 5"
+      ],
+      [
+        "Almost Never 1",
+        "Rarely 2",
+        "Sometimes 3",
+        "Frequently 4",
+        "Almost Always 5"
+      ],
+      [
+        "Almost Never 1",
+        "Rarely 2",
+        "Sometimes 3",
+        "Frequently 4",
+        "Almost Always 5"
+      ],
+      [
+        "Almost Never 1",
+        "Rarely 2",
+        "Sometimes 3",
+        "Frequently 4",
+        "Almost Always 5"
+      ],
+      [
+        "Almost Never 1",
+        "Rarely 2",
+        "Sometimes 3",
+        "Frequently 4",
+        "Almost Always 5"
+      ],
+      [
+        "Almost Never 1",
+        "Rarely 2",
+        "Sometimes 3",
+        "Frequently 4",
+        "Almost Always 5"
+      ],
+      [
+        "Almost Never 1",
+        "Rarely 2",
+        "Sometimes 3",
+        "Frequently 4",
+        "Almost Always 5"
+      ],
+      [
+        "Almost Never 1",
+        "Rarely 2",
+        "Sometimes 3",
+        "Frequently 4",
+        "Almost Always 5"
+      ],
+      [
+        "Almost Never 1",
+        "Rarely 2",
+        "Sometimes 3",
+        "Frequently 4",
+        "Almost Always 5"
+      ],
+      [
+        "Almost Never 1",
+        "Rarely 2",
+        "Sometimes 3",
+        "Frequently 4",
+        "Almost Always 5"
+      ],
+      [
+        "Almost Never 1",
+        "Rarely 2",
+        "Sometimes 3",
+        "Frequently 4",
+        "Almost Always 5"
+      ],
+      [
+        "Almost Never 1",
+        "Rarely 2",
+        "Sometimes 3",
+        "Frequently 4",
+        "Almost Always 5"
+      ],
+      [
+        "Almost Never 1",
+        "Rarely 2",
+        "Sometimes 3",
+        "Frequently 4",
+        "Almost Always 5"
+      ],
+      [
+        "Almost Never 1",
+        "Rarely 2",
+        "Sometimes 3",
+        "Frequently 4",
+        "Almost Always 5"
+      ],
+      [
+        "Almost Never 1",
+        "Rarely 2",
+        "Sometimes 3",
+        "Frequently 4",
+        "Almost Always 5"
+      ],
+      [
+        "Almost Never 1",
+        "Rarely 2",
+        "Sometimes 3",
+        "Frequently 4",
+        "Almost Always 5"
+      ],
+      [
+        "Almost Never 1",
+        "Rarely 2",
+        "Sometimes 3",
+        "Frequently 4",
+        "Almost Always 5"
+      ]
     ]
   },
   "MMPI2": {
@@ -103,18 +300,54 @@
       "I am easily embarrassed."
     ],
     "options": [
-      ["Yes", "No"],
-      ["Yes", "No"],
-      ["Yes", "No"],
-      ["Yes", "No"],
-      ["Yes", "No"],
-      ["Yes", "No"],
-      ["Yes", "No"],
-      ["Yes", "No"],
-      ["Yes", "No"],
-      ["Yes", "No"],
-      ["Yes", "No"],
-      ["Yes", "No"]
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ]
     ]
   },
   "NPQ": {
@@ -130,15 +363,464 @@
       "I rely on others to help me decide important matters."
     ],
     "options": [
-      ["Yes", "No"],
-      ["Yes", "No"],
-      ["Yes", "No"],
-      ["Yes", "No"],
-      ["Yes", "No"],
-      ["Yes", "No"],
-      ["Yes", "No"],
-      ["Yes", "No"],
-      ["Yes", "No"]
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ]
+    ]
+  },
+  "ADHD": {
+    "questions": [
+      "How often do you have trouble wrapping up the final details of a project, once the challenging parts have been done?",
+      " How often do you have difficulty getting things in order when you have to do a task that requires organisation?",
+      " How often do you have problems remembering appointments or obligations?",
+      " When you have a task that requires a lot of thought,how often do you avoid or delay getting started?",
+      "How often do you fidget or squirm with your hands or feet when you have to sit down for a long time?",
+      " How often do you feel overly active and compelled to do things, like you were driven by a motor?",
+      "How often do you make careless mistakes when you have to work on a boring or difficult project?",
+      "How often do you have difficulty keeping your attention when you are doing boring or repetitive work?",
+      " How often do you have difficulty concentrating on what people say to you, even when they are speaking to you directly?",
+      " How often do you misplace or have difficulty finding things at home or at work"
+    ],
+    "options": [
+      [
+        "Never",
+        " Rarely",
+        " Sometimes",
+        " Often",
+        "Very Often"
+      ],
+      [
+        "Never",
+        " Rarely",
+        " Sometimes",
+        " Often",
+        "Very Often"
+      ],
+      [
+        "Never",
+        " Rarely",
+        " Sometimes",
+        " Often",
+        "Very Often"
+      ],
+      [
+        "Never",
+        " Rarely",
+        " Sometimes",
+        " Often",
+        "Very Often"
+      ],
+      [
+        "Never",
+        " Rarely",
+        " Sometimes",
+        " Often",
+        "Very Often"
+      ],
+      [
+        "Never",
+        " Rarely",
+        " Sometimes",
+        " Often",
+        "Very Often"
+      ],
+      [
+        "Never",
+        " Rarely",
+        " Sometimes",
+        " Often",
+        "Very Often"
+      ],
+      [
+        "Never",
+        " Rarely",
+        " Sometimes",
+        " Often",
+        "Very Often"
+      ],
+      [
+        "Never",
+        " Rarely",
+        " Sometimes",
+        " Often",
+        "Very Often"
+      ],
+      [
+        "Never",
+        " Rarely",
+        " Sometimes",
+        " Often",
+        "Very Often"
+      ]
+    ]
+  },
+  "BDI": {
+    "questions": [
+      "How often do you experience feelings of sadness, and how long do they typically last?",
+      "What are your thoughts about the future? Do you feel like you have control over the direction of your life?",
+      " How do you define success, and do you feel like you've achieved it?",
+      " Do you feel like you're able to experience pleasure or enjoyment in your daily life?",
+      "Are there any negative self-statements that you repeat to yourself when you feel guilty?",
+      " What are some things that you feel you're being punished for? Are there any specific situations or experiences that contribute to these feelings?",
+      "What are some things that you're disappointed in yourself about? Are there any specific situations or experiences that contribute to these feelings?",
+      "How do you handle feelings of self-criticism? Do you try to make amends or seek forgiveness?",
+      "Are there any specific situations or experiences that contribute to your thoughts of self-harm?",
+      " How often do you cry, and what typically triggers your tears?"
+    ],
+    "options": [
+      [
+        "I do not feel sad.",
+        "I feel sad ",
+        "I am sad all the time and I can't snap out of it.",
+        "I am so sad and unhappy that I can't stand it."
+      ],
+      [
+        "I am not particularly discouraged about the future.",
+        " I feel discouraged about the future. ",
+        " I feel I have nothing to look forward to. ",
+        " I feel the future is hopeless and that things cannot improve. "
+      ],
+      [
+        "I do not feel like a failure",
+        " I feel I have failed more than the average person. ",
+        "As I look back on my life, all I can see is a lot of failures. ",
+        "I feel I am a complete failure as a person."
+      ],
+      [
+        "I get as much satisfaction out of things as I used to. ",
+        "I don't enjoy things the way I used to. ",
+        "I don't get real satisfaction out of anything anymore. ",
+        "I am dissatisfied or bored with everything."
+      ],
+      [
+        "I don't feel particularly guilty ",
+        "I feel guilty a good part of the time.",
+        "I feel quite guilty most of the time. ",
+        "I feel guilty all of the time. "
+      ],
+      [
+        "I don't feel I am being punished. ",
+        "I feel I may be punished. ",
+        "I expect to be punished. ",
+        "I feel I am being punished. "
+      ],
+      [
+        "I don't feel disappointed in myself.",
+        "I am disappointed in myself.",
+        "I am disgusted with myself.",
+        "I hate myself"
+      ],
+      [
+        "I don't feel I am any worse than anybody else. ",
+        "I am critical of myself for my weaknesses or mistakes.",
+        "I blame myself all the time for my faults. ",
+        "I blame myself for everything bad that happens."
+      ],
+      [
+        "I don't have any thoughts of killing myself. ",
+        "I have thoughts of killing myself, but I would not carry them out. ",
+        "I would like to kill myself.  ",
+        "I would kill myself if I had the chance. "
+      ],
+      [
+        "I don't cry any more than usual. ",
+        "I cry more now than I used to.",
+        "I cry all the time now.",
+        "I used to be able to cry, but now I can't cry even though I want to. "
+      ]
+    ]
+  },
+  "GAD": {
+    "questions": [
+      "Feeling nervous, anxious, or on edge?",
+      "Not being able to stop or control worrying?",
+      "Worrying too much about different things?",
+      "Trouble relaxing?",
+      "Being so restless that it is hard to sit still?",
+      "Becoming easily annoyed or irritable?",
+      "Feeling afraid, as if something awful might happen?"
+    ],
+    "options": [
+      [
+        "Not at all",
+        "Several days",
+        "More than half the days",
+        "Nearly every day"
+      ],
+      [
+        "Not at all",
+        "Several days",
+        "More than half the days",
+        "Nearly every day"
+      ],
+      [
+        "Not at all",
+        "Several days",
+        "More than half the days",
+        "Nearly every day"
+      ],
+      [
+        "Not at all",
+        "Several days",
+        "More than half the days",
+        "Nearly every day"
+      ],
+      [
+        "Not at all",
+        "Several days",
+        "More than half the days",
+        "Nearly every day"
+      ],
+      [
+        "Not at all",
+        "Several days",
+        "More than half the days",
+        "Nearly every day"
+      ],
+      [
+        "Not at all",
+        "Several days",
+        "More than half the days",
+        "Nearly every day"
+      ]
+    ]
+  },
+  "MDQ": {
+    "questions": [
+      "I often feel dependent on others.",
+      "I avoid situations where I have to make decisions independently.",
+      "I often feel weak or tired for no clear reason.",
+      "I find it difficult to concentrate on tasks.",
+      "I frequently feel dissatisfied with myself.",
+      "I consider myself a failure compared to others.",
+      "I have trouble controlling my temper.",
+      "I often hesitate when making decisions.",
+      "I rely on others to help me decide important matters.",
+      "Have you felt so good or so hyper that other people thought you were not your normal self or you were so hyper that you got into trouble?",
+      "Have you been so irritable that you shouted at people or started fights or arguments?",
+      "Have you felt much more self-confident than usual?",
+      "Have you gotten much less sleep than usual and found you didn’t really miss it?",
+      "Have you been much more talkative or spoken faster than usual?",
+      "Have you had thoughts racing through your head or couldn’t slow your mind down?",
+      "Have you been so easily distracted by things around you that you had trouble concentrating or staying on track?",
+      "Have you had much more energy than usual?",
+      "Have you been much more active or done many more things than usual?",
+      "Have you been much more social or outgoing than usual, for example, you telephoned friends in the middle of the night?"
+    ],
+    "options": [
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ]
+    ]
+  },
+  "OCIR": {
+    "questions": [
+      "I have saved up so many things that they get in the way.",
+      "I check things more often than necessary.",
+      "I get upset if objects are not arranged properly.",
+      "I feel compelled to count while I am doing things.",
+      "I find it difficult to touch an object when I know it has been touched by strangers or certain people.",
+      "I find it difficult to control my own thoughts.",
+      "I collect things I don’t need.",
+      "I repeatedly check doors, windows, drawers, etc.",
+      "I get upset if others change the way I have arranged things.",
+      "I feel I have to repeat certain numbers."
+    ],
+    "options": [
+      [
+        "Not at all",
+        "A little",
+        "Moderately",
+        "A lot",
+        "Extremely"
+      ],
+      [
+        "Not at all",
+        "A little",
+        "Moderately",
+        "A lot",
+        "Extremely"
+      ],
+      [
+        "Not at all",
+        "A little",
+        "Moderately",
+        "A lot",
+        "Extremely"
+      ],
+      [
+        "Not at all",
+        "A little",
+        "Moderately",
+        "A lot",
+        "Extremely"
+      ],
+      [
+        "Not at all",
+        "A little",
+        "Moderately",
+        "A lot",
+        "Extremely"
+      ],
+      [
+        "Not at all",
+        "A little",
+        "Moderately",
+        "A lot",
+        "Extremely"
+      ],
+      [
+        "Not at all",
+        "A little",
+        "Moderately",
+        "A lot",
+        "Extremely"
+      ],
+      [
+        "Not at all",
+        "A little",
+        "Moderately",
+        "A lot",
+        "Extremely"
+      ],
+      [
+        "Not at all",
+        "A little",
+        "Moderately",
+        "A lot",
+        "Extremely"
+      ],
+      [
+        "Not at all",
+        "A little",
+        "Moderately",
+        "A lot",
+        "Extremely"
+      ]
+    ]
+  },
+  "IBT": {
+    "questions": [
+      "inkblot1.png",
+      "inkblot2.png",
+      "inkblot3.png",
+      "inkblot4.png",
+      "inkblot5.png",
+      "inkblot6.png",
+      "inkblot7.png",
+      "inkblot8.png",
+      "inkblot9.png",
+      "inkblot10.png"
+    ],
+    "options": [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
     ]
   }
 }

@@ -113,10 +113,12 @@ const Questionnaire = ({ questionnaireName, userId }) => {
           />
         </div>
       );
-    } else if (selectedData.questions[currentStep] === "Do you have any additional comments or concerns?") {
+    } else if (selectedData.questions[currentStep] === "Do you have any additional comments or concerns?" || questionnaireName === "IBT") {
       return (
         <Form.Group controlId={`question-${currentStep}`}>
-          <Form.Label>{selectedData.questions[currentStep]}</Form.Label>
+          {questionnaireName === "IBT" ? (<><img className='btnn' src={`/Assets/${selectedData.questions[currentStep]}`} alt={`Question ${currentStep}`} />
+          <Form.Label>What is the First thing that U see</Form.Label></>)
+            : (<Form.Label>{selectedData.questions[currentStep]}</Form.Label>)}
           <Form.Control
             as="textarea"
             rows={3}
@@ -128,7 +130,8 @@ const Questionnaire = ({ questionnaireName, userId }) => {
     } else {
       return (
         <Form.Group controlId={`question-${currentStep}`}>
-          <Form.Label>{selectedData.questions[currentStep]}</Form.Label>
+          {questionnaireName === "IBT" ? (<img src={`/Assets/${selectedData.questions[currentStep]}`} alt={`Question ${currentStep}`} />)
+            : (<Form.Label>{selectedData.questions[currentStep]}</Form.Label>)}
           <Form.Control
             as="select"
             value={answers[currentStep]}

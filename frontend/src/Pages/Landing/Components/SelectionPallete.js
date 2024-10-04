@@ -22,7 +22,8 @@ export default function SelectionPallete() {
                 <PalleteCard title={"Personal Counseling"} desc={"Individual Counseling for Adults"} img={personalImg} url={"questionnaire"}/>
                 <PalleteCard title={"Group Counseling"} desc={"Counseling for Groups"} img={teenImg} url={"questionnaire"}/>
                 <PalleteCard title={"Student Counseling"} desc={"Counseling for students"} img={studentImg} url={"questionnaire"}/>
-                <PalleteCard title={"BFT Counseling"} desc={"Counseling for students"} img={studentImg} url={"BFT"}/>
+                <PalleteCard title={"Psychometric Testing"} desc={"Counseling through psychology"} img={studentImg} url={"PT"}/>
+                <PalleteCard title={"Self-Report Testing"} desc={"Counseling for anyone"} img={studentImg} url={"SRT"}/>
             </div>
         </div>
     </div>
