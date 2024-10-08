@@ -1,161 +1,149 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Peer from 'peerjs';
-import './VideoChat.css'; // CSS file for styling
+import './VideoChat.css'; // Create a CSS file for styling
 
 const VideoChat = () => {
-    const [peerId, setPeerId] = useState('');
-    const [remotePeerId, setRemotePeerId] = useState('');
-    const [callStarted, setCallStarted] = useState(false);
-    const [dataConnection, setDataConnection] = useState(null); // To manage data connection for chat
-    const [message, setMessage] = useState('');
-    const [messages, setMessages] = useState([]); // Store chat messages
-    const [isChatOpen, setIsChatOpen] = useState(false);
+    const [peerId, setPeerId] = useState(''); // Local Peer ID
+    const [remotePeerId, setRemotePeerId] = useState(''); // Remote Peer ID
+    const [callStarted, setCallStarted] = useState(false); // Track if call has started
+    const [messages, setMessages] = useState([]); // Chat messages
+    const [message, setMessage] = useState(''); // Input message
 
-    const localVideoRef = useRef(null);
-    const remoteVideoRef = useRef(null);
-    const peerInstance = useRef(null);
+    const localVideoRef = useRef(null); // Reference for local video element
+    const remoteVideoRef = useRef(null); // Reference for remote video element
+    const peerInstance = useRef(null); // Reference to hold the PeerJS instance
+    const dataConnection = useRef(null); // Reference for data connection for chat
 
     useEffect(() => {
+        // Initialize peer instance
         peerInstance.current = new Peer();
 
-        peerInstance.current.on('open', id => {
+        // Handle peer open event
+        peerInstance.current.on('open', (id) => {
             setPeerId(id);
         });
 
-        peerInstance.current.on('call', call => {
+        // Handle incoming calls
+        peerInstance.current.on('call', (call) => {
             navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-                .then(stream => {
+                .then((stream) => {
                     localVideoRef.current.srcObject = stream;
-                    call.answer(stream);
+                    call.answer(stream); // Answer the call with the stream
 
-                    call.on('stream', remoteStream => {
+                    call.on('stream', (remoteStream) => {
                         remoteVideoRef.current.srcObject = remoteStream;
                     });
-                });
+                })
+                .catch((error) => console.error('Failed to get local stream', error));
         });
 
-        // Handle incoming data connections
-        peerInstance.current.on('connection', conn => {
-            setDataConnection(conn);
+        // Handle incoming data connection
+        peerInstance.current.on('connection', (conn) => {
+            dataConnection.current = conn;
             conn.on('data', (data) => {
-                setMessages(prevMessages => [...prevMessages, { sender: 'Peer', text: data }]);
+                setMessages((prevMessages) => [...prevMessages, { sender: 'Remote', text: data }]);
             });
         });
 
         return () => {
-            peerInstance.current.destroy();
+            if (peerInstance.current) {
+                peerInstance.current.destroy();
+            }
         };
     }, []);
 
+    // Initiate a call to the remote peer
     const startCall = () => {
         navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-            .then(stream => {
+            .then((stream) => {
                 localVideoRef.current.srcObject = stream;
 
                 const call = peerInstance.current.call(remotePeerId, stream);
                 setCallStarted(true);
 
-                call.on('stream', remoteStream => {
+                // Establish a data connection for chat
+                const conn = peerInstance.current.connect(remotePeerId);
+                dataConnection.current = conn;
+
+                conn.on('open', () => {
+                    console.log('Data connection established.');
+                });
+
+                conn.on('data', (data) => {
+                    setMessages((prevMessages) => [...prevMessages, { sender: 'Remote', text: data }]);
+                });
+
+                call.on('stream', (remoteStream) => {
                     remoteVideoRef.current.srcObject = remoteStream;
                 });
 
-                // Establish data connection for chat
-                const conn = peerInstance.current.connect(remotePeerId);
-                setDataConnection(conn);
-
-                conn.on('data', (data) => {
-                    setMessages(prevMessages => [...prevMessages, { sender: 'Peer', text: data }]);
+                call.on('close', () => {
+                    setCallStarted(false);
+                    remoteVideoRef.current.srcObject = null;
                 });
             })
-            .catch(error => console.error('Failed to get local stream', error));
+            .catch((error) => console.error('Failed to get local stream', error));
     };
 
-    // Send a chat message to the peer
+    // Send a chat message to the remote peer
     const sendMessage = () => {
-        if (dataConnection && message.trim()) {
-            dataConnection.send(message);
-            setMessages(prevMessages => [...prevMessages, { sender: 'You', text: message }]);
-            setMessage(''); // Clear input
+        if (dataConnection.current && message.trim() !== '') {
+            dataConnection.current.send(message);
+            setMessages((prevMessages) => [...prevMessages, { sender: 'You', text: message }]);
+            setMessage(''); // Clear the input field
         }
     };
 
     return (
         <div className="video-chat-container">
-            <header className="header">
-                <nav className="navbar">
-                    <h1 className="site-title">Mental Health Counseling</h1>
-                    <ul className="nav-links">
-                        <li><a href="/">Home</a></li>
-                        <li><a href="/interview">Take An Interview</a></li>
-                        <li><a href="/help">Seek Help</a></li>
-                        <li><button className="login-btn">Log In</button></li>
-                    </ul>
-                </nav>
-            </header>
-            <main>
-                <div className="video-chat">
-                    <div className="peer-id-section">
-                        <p><strong>Your Peer ID:</strong> {peerId}</p>
-                        <input
-                            type="text"
-                            placeholder="Enter Remote Peer ID"
-                            value={remotePeerId}
-                            onChange={(e) => setRemotePeerId(e.target.value)}
-                            className="peer-id-input"
-                        />
-                        <button onClick={startCall} className="start-call-btn" disabled={callStarted || !remotePeerId}>
-                            Start Call
-                        </button>
-                    </div>
-                    <div className="video-section">
-                        <div className="video-card">
-                            <h3>Local Video</h3>
-                            <video ref={localVideoRef} autoPlay playsInline className="video" />
-                        </div>
-                        <div className="video-card">
-                            <h3>Remote Video</h3>
-                            <video ref={remoteVideoRef} autoPlay playsInline className="video" />
-                        </div>
-                    </div>
+            <h2 className="title">Video Chat with Integrated Messaging</h2>
+            <div className="peer-info">
+                <p><strong>Your Peer ID:</strong> {peerId}</p>
+                <input
+                    type="text"
+                    placeholder="Enter Remote Peer ID"
+                    value={remotePeerId}
+                    onChange={(e) => setRemotePeerId(e.target.value)}
+                    className="peer-id-input"
+                />
+                <button onClick={startCall} disabled={callStarted || !remotePeerId} className="start-call-btn">
+                    {callStarted ? 'Call In Progress' : 'Start Call'}
+                </button>
+            </div>
+            <div className="video-section">
+                <div className="video-container">
+                    <h3>Local Video</h3>
+                    <video ref={localVideoRef} autoPlay playsInline className="video-box" />
                 </div>
-                {/* Chat Button and Chat Sidebar */}
-                <button className="chat-button" onClick={() => setIsChatOpen(!isChatOpen)}>💬</button>
-                {isChatOpen && (
-                    <div className="chat-sidebar">
-                        <div className="chat-header">
-                            <h3>In-call Messages</h3>
-                            <button className="close-chat-btn" onClick={() => setIsChatOpen(false)}>✖</button>
+                <div className="video-container">
+                    <h3>Remote Video</h3>
+                    <video ref={remoteVideoRef} autoPlay playsInline className="video-box" />
+                </div>
+            </div>
+            <div className="chat-section">
+                <h3>Chat</h3>
+                <div className="chat-box">
+                    {messages.map((msg, index) => (
+                        <div key={index} className={`chat-message ${msg.sender === 'You' ? 'your-message' : 'remote-message'}`}>
+                            <strong>{msg.sender}: </strong> {msg.text}
                         </div>
-                        <div className="chat-messages">
-                            {messages.map((msg, index) => (
-                                <div key={index} className={`message ${msg.sender === 'You' ? 'sent' : 'received'}`}>
-                                    <p><strong>{msg.sender}:</strong> {msg.text}</p>
-                                </div>
-                            ))}
-                        </div>
-                        <div className="chat-input-section">
-                            <input
-                                type="text"
-                                placeholder="Send a message..."
-                                value={message}
-                                onChange={(e) => setMessage(e.target.value)}
-                                className="chat-input"
-                            />
-                            <button onClick={sendMessage} className="send-btn">Send</button>
-                        </div>
-                    </div>
-                )}
-            </main>
-            <footer className="footer">
-                <p>Sign up for personalized emails and queries</p>
-                <form className="newsletter-form">
-                    <input type="email" placeholder="Email address" className="email-input" />
-                    <button type="submit" className="subscribe-btn">Subscribe</button>
-                </form>
-            </footer>
+                    ))}
+                </div>
+                <div className="chat-input-container">
+                    <input
+                        type="text"
+                        placeholder="Type your message..."
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        className="chat-input"
+                    />
+                    <button onClick={sendMessage} className="send-message-btn">
+                        Send
+                    </button>
+                </div>
+            </div>
         </div>
     );
 };
 
 export default VideoChat;
-

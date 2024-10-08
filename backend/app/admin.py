@@ -1,5 +1,21 @@
 from django.contrib import admin
-from .models import UserProfile, Video, UserVideo, UserQuestionnaire, MHProfessional
+from .models import (
+    UserProfile,
+    Video,
+    UserVideo,
+    UserQuestionnaire,
+    MHProfessional,
+    MMPI2Questionnaire,
+    ADHD,
+    IBT,
+    OCIR,
+    MDQ,
+    GAD,
+    BDI,
+    NPQ,
+    BFTQuestionnaire,
+    ENNEAGRAM
+)
 from django.db.models import Count
 from collections import Counter
 
@@ -28,7 +44,180 @@ class VideoAdmin(admin.ModelAdmin):
                 },
             }
         return "No emotions data"
+    
+@admin.register(MMPI2Questionnaire)
+class MMPI2QuestionnaireAdmin(admin.ModelAdmin):
+    list_display = (
+        'user', 
+        'rarelyWorryAboutHealth', 
+        'alwaysTellTruth', 
+        'feelTiredMostOfTheTime', 
+        'feelPunishedWithoutCause', 
+        'botheredByUpsetStomach', 
+        'getLotOfHeadaches', 
+        'likeToArrangeFlowers', 
+        'someoneHasItInForMe', 
+        'oftenDisturbingThoughts', 
+        'hearThingsOthersCantHear', 
+        'amHappierThanMostPeople', 
+        'amEasilyEmbarrassed', 
+        'created_at'
+    )
 
+@admin.register(ENNEAGRAM)
+class ENNEAGRAMAdmin(admin.ModelAdmin):
+    list_display = (
+        'user', 
+        'creativeArtisticView', 
+        'feelDifferentFromOthers', 
+        'experienceMelancholy', 
+        'overlySensitive', 
+        'feelSomethingIsMissing', 
+        'feelEnviousOfOthers', 
+        'thriveInCreativeEnvironments', 
+        'canBecomeWithdrawnWhenMisunderstood', 
+        'romanticLonging', 
+        'caughtInFantasyWorld', 
+        'enjoyUniqueElegantThings', 
+        'moodyWhenStressed', 
+        'reflectiveAndSearchForMeaning', 
+        'striveToBeUnique', 
+        'mannersAndGoodTaste', 
+        'seenAsOverlyDramatic', 
+        'importantToUnderstandFeelings'
+    )
+@admin.register(BFTQuestionnaire)
+class BFTQuestionnaireAdmin(admin.ModelAdmin):
+    list_display = (
+        'user', 
+        'talksALot', 
+        'noticesWeakPoints', 
+        'doesThingsCarefully', 
+        'isSadDepressed', 
+        'isOriginal', 
+        'keepsThoughtsToThemselves', 
+        'isHelpfulNotSelfish', 
+        'isCareless', 
+        'isRelaxed', 
+        'isCurious', 
+        'created_at'  # Adding created_at to the display list
+    )
+@admin.register(NPQ)
+class NPQAdmin(admin.ModelAdmin):
+    list_display = (
+        'user',
+        'feelDependentOnOthers',
+        'avoidIndependentDecisions',
+        'feelWeakOrTired',
+        'findItDifficultToConcentrate',
+        'frequentlyDissatisfiedWithSelf',
+        'considerSelfAFailure',
+        'troubleControllingTemper',
+        'hesitateWhenMakingDecisions',
+        'relyOnOthersForDecisions',
+    )
+
+@admin.register(ADHD)
+class ADHDAdmin(admin.ModelAdmin):
+    list_display = (
+        'user',
+        'troubleWrappingUpFinalDetails',
+        'difficultyGettingOrganized',
+        'problemsRememberingAppointments',
+        'avoidDelayingThoughtIntensiveTasks',
+        'fidgetOrSquirmWhenSitting',
+        'feelOverlyActiveCompelled',
+        'makeCarelessMistakes',
+        'difficultyKeepingAttention',
+        'difficultyConcentratingOnDirectSpeech',
+        'misplaceOrDifficultyFindingThings',
+    )
+
+@admin.register(BDI)
+class BDIAdmin(admin.ModelAdmin):
+    list_display = (
+        'user',
+        'feelingsOfSadness',
+        'thoughtsAboutFuture',
+        'definitionOfSuccess',
+        'abilityToExperiencePleasure',
+        'negativeSelfStatements',
+        'feelingsOfPunishment',
+        'disappointmentsInSelf',
+        'handlingSelfCriticism',
+        'thoughtsOfSelfHarm',
+        'frequencyOfCrying',
+    )
+
+@admin.register(GAD)
+class GADAdmin(admin.ModelAdmin):
+    list_display = (
+        'user',
+        'feelingNervous',
+        'inabilityToControlWorrying',
+        'excessiveWorrying',
+        'troubleRelaxing',
+        'restlessness',
+        'irritability',
+        'fearOfSomethingAwful',
+    )
+
+@admin.register(MDQ)
+class MDQAdmin(admin.ModelAdmin):
+    list_display = (
+        'user',
+        'feelDependentOnOthers',
+        'avoidIndependentDecisionMaking',
+        'feelWeakOrTired',
+        'difficultyConcentrating',
+        'feelDissatisfiedWithSelf',
+        'considerSelfAFailure',
+        'troubleControllingTemper',
+        'hesitateWhenMakingDecisions',
+        'relyOnOthersForDecisions',
+        'feelHyperToThePointOfConcern',
+        'irritabilityLeadingToConflict',
+        'increasedSelfConfidence',
+        'lessSleepThanUsual',
+        'moreTalkativeThanUsual',
+        'racingThoughts',
+        'easilyDistracted',
+        'moreEnergyThanUsual',
+        'moreActiveThanUsual',
+        'moreSocialThanUsual',
+    )
+
+@admin.register(OCIR)
+class OCIRAdmin(admin.ModelAdmin):
+    list_display = (
+        'user',
+        'savedTooManyThings',
+        'checkThingsMoreOften',
+        'upsetIfNotArrangedProperly',
+        'compelledToCount',
+        'difficultToTouchTouchedObjects',
+        'difficultToControlThoughts',
+        'collectUnnecessaryThings',
+        'repeatedlyCheckItems',
+        'upsetIfOthersChangeArrangement',
+        'feelCompelledToRepeatNumbers',
+    )
+
+@admin.register(IBT)
+class IBTAdmin(admin.ModelAdmin):
+    list_display = (
+        'user',
+        'image1',
+        'image2',
+        'image3',
+        'image4',
+        'image5',
+        'image6',
+        'image7',
+        'image8',
+        'image9',
+        'image10',
+    )
 @admin.register(UserVideo)
 class UserVideoAdmin(admin.ModelAdmin):
     list_display = ('user', 'video', 'transcript', 'emotions')

@@ -51,17 +51,17 @@ function App() {
               element={
                 <PrivateRoute>
                   <TopNav />
-                  <Questionnaire questionnaireName="personal"/>
+                  <Questionnaire questionnaireName="personal" />
                   <Footer />
                 </PrivateRoute>
               }
             />
-             <Route
+            <Route
               path="/landing/SRT"
               element={
                 <PrivateRoute>
                   <TopNav />
-                  <Multipage test="self-report"/>
+                  <Multipage test="self-report" />
                   <Footer />
                 </PrivateRoute>
               }
@@ -71,7 +71,7 @@ function App() {
               element={
                 <PrivateRoute>
                   <TopNav />
-                  <Questionnaire questionnaireName="ADHD"/>
+                  <Questionnaire questionnaireName="ADHD" />
                   <Footer />
                 </PrivateRoute>
               }
@@ -81,7 +81,7 @@ function App() {
               element={
                 <PrivateRoute>
                   <TopNav />
-                  <Questionnaire questionnaireName="BDI"/>
+                  <Questionnaire questionnaireName="BDI" />
                   <Footer />
                 </PrivateRoute>
               }
@@ -91,7 +91,7 @@ function App() {
               element={
                 <PrivateRoute>
                   <TopNav />
-                  <Questionnaire questionnaireName="OCIR"/>
+                  <Questionnaire questionnaireName="OCIR" />
                   <Footer />
                 </PrivateRoute>
               }
@@ -101,7 +101,7 @@ function App() {
               element={
                 <PrivateRoute>
                   <TopNav />
-                  <Questionnaire questionnaireName="MDQ"/>
+                  <Questionnaire questionnaireName="MDQ" />
                   <Footer />
                 </PrivateRoute>
               }
@@ -111,7 +111,7 @@ function App() {
               element={
                 <PrivateRoute>
                   <TopNav />
-                  <Questionnaire questionnaireName="GAD"/>
+                  <Questionnaire questionnaireName="GAD" />
                   <Footer />
                 </PrivateRoute>
               }
@@ -121,7 +121,7 @@ function App() {
               element={
                 <PrivateRoute>
                   <TopNav />
-                  <Multipage test="PT"/>
+                  <Multipage test="PT" />
                   <Footer />
                 </PrivateRoute>
               }
@@ -131,7 +131,7 @@ function App() {
               element={
                 <PrivateRoute>
                   <TopNav />
-                  <Questionnaire questionnaireName="BFT"/>
+                  <Questionnaire questionnaireName="BFT" />
                   <Footer />
                 </PrivateRoute>
               }
@@ -141,7 +141,7 @@ function App() {
               element={
                 <PrivateRoute>
                   <TopNav />
-                  <Questionnaire questionnaireName="MMPI2"/>
+                  <Questionnaire questionnaireName="MMPI2" />
                   <Footer />
                 </PrivateRoute>
               }
@@ -161,7 +161,7 @@ function App() {
               element={
                 <PrivateRoute>
                   <TopNav />
-                  <Questionnaire questionnaireName="NPQ"/>
+                  <Questionnaire questionnaireName="NPQ" />
                   <Footer />
                 </PrivateRoute>
               }
@@ -171,7 +171,7 @@ function App() {
               element={
                 <PrivateRoute>
                   <TopNav />
-                  <Questionnaire questionnaireName="ENNEAGRAM"/>
+                  <Questionnaire questionnaireName="ENNEAGRAM" />
                   <Footer />
                 </PrivateRoute>
               }
@@ -181,7 +181,7 @@ function App() {
               element={
                 <PrivateRoute>
                   <TopNav />
-                  <Questionnaire questionnaireName="IBT"/>
+                  <Questionnaire questionnaireName="IBT" />
                   <Questionnaire questions={questions} options={options} />
                   <Footer />
                 </PrivateRoute>

@@ -1,6 +1,36 @@
 from rest_framework import viewsets
-from .models import UserProfile, Video, UserVideo, UserQuestionnaire, MHProfessional
-from .serializers import UserProfileSerializer, VideoSerializer, UserVideoSerializer, UserQuestionnaireSerializer
+from .models import (
+    UserProfile,
+    Video,
+    UserVideo,
+    UserQuestionnaire,
+    MHProfessional,
+    MMPI2Questionnaire,
+    ADHD,
+    IBT,
+    OCIR,
+    MDQ,
+    GAD,
+    BDI,
+    ENNEAGRAM,
+    NPQ,
+)
+from .serializers import (
+    UserProfileSerializer,
+    VideoSerializer,
+    MMPI2QuestionnaireSerializer,
+    ENNEAGRAMSerializer,
+    UserVideoSerializer,
+    UserQuestionnaireSerializer,
+    BFTQuestionnaireSerializer,
+    ADHDSerializer,
+    IBTSerializer,
+    OCIRSerializer,
+    MDQSerializer,
+    GADSerializer,
+    BDISerializer,
+    NPQSerializer,
+)
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 
@@ -44,6 +74,10 @@ class VideoViewSet(viewsets.ModelViewSet):
             return Response(UserVideoSerializer(video_instance).data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class MMPI2QuestionnaireViewSet(viewsets.ModelViewSet):
+    queryset = MMPI2Questionnaire.objects.all()
+    serializer_class = MMPI2QuestionnaireSerializer
 
 class UploadVideoView(APIView):
     def post(self, request):
@@ -94,6 +128,42 @@ class UploadVideoView(APIView):
 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+class ADHDViewSet(viewsets.ModelViewSet):
+    queryset = ADHD.objects.all()
+    serializer_class = ADHDSerializer
+
+
+class IBTViewSet(viewsets.ModelViewSet):
+    queryset = IBT.objects.all()
+    serializer_class = IBTSerializer
+
+
+class OCIRViewSet(viewsets.ModelViewSet):
+    queryset = OCIR.objects.all()
+    serializer_class = OCIRSerializer
+
+
+class MDQViewSet(viewsets.ModelViewSet):
+    queryset = MDQ.objects.all()
+    serializer_class = MDQSerializer
+
+
+class GADViewSet(viewsets.ModelViewSet):
+    queryset = GAD.objects.all()
+    serializer_class = GADSerializer
+
+
+class BDIViewSet(viewsets.ModelViewSet):
+    queryset = BDI.objects.all()
+    serializer_class = BDISerializer
+class ENNEAGRAMViewSet(viewsets.ModelViewSet):
+    queryset = ENNEAGRAM.objects.all()
+    serializer_class = ENNEAGRAMSerializer
+
+
+class NPQViewSet(viewsets.ModelViewSet):
+    queryset = NPQ.objects.all()
+    serializer_class = NPQSerializer
 class UserQuestionnaireCreateView(APIView):
     def post(self, request):
         serializer = UserQuestionnaireSerializer(data=request.data)
@@ -109,6 +179,14 @@ class UserQuestionnaireCreateView(APIView):
             questionnaire.save()
             return Response(UserQuestionnaireSerializer(questionnaire).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class BFTQuestionnaireCreateView(APIView):
+    def post(self, request):
+        serializer = BFTQuestionnaireSerializer(data=request.data)
+        if serializer.is_valid():
+            bft_questionnaire = serializer.save()
+            return Response(BFTQuestionnaireSerializer(bft_questionnaire).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 def get_matched_professionals(request):
     questionnaire = UserQuestionnaire.objects.order_by('-created_at').first()
