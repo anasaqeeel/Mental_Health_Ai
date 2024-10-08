@@ -97,7 +97,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("Enneagram Questionnaire submitted successfully");
-          navigate(`/matched-professionals`); // Navigate or handle success
+          navigate(`/landing/video-chat`); // Navigate or handle success
         } else {
           console.error("Failed to submit the Enneagram questionnaire", await response.json());
         }
@@ -133,7 +133,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("NPQ Questionnaire submitted successfully");
-          navigate(`/matched-professionals`);
+          navigate(`/landing/video-chat`);
         } else {
           console.error("Failed to submit the NPQ questionnaire", await response.json());
         }
@@ -168,7 +168,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("ADHD Questionnaire submitted successfully");
-          navigate(`/matched-professionals`);
+          navigate(`/landing/video-chat`);
         } else {
           console.error("Failed to submit the ADHD questionnaire", await response.json());
         }
@@ -202,7 +202,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("OCIR Questionnaire submitted successfully");
-          navigate(`/matched-professionals`);
+          navigate(`/landing/video-chat`);
         } else {
           console.error("Failed to submit the OCIR questionnaire", await response.json());
         }
@@ -246,7 +246,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("MDQ Questionnaire submitted successfully");
-          navigate(`/matched-professionals`);
+          navigate(`/landing/video-chat`);
         } else {
           console.error("Failed to submit the MDQ questionnaire", await response.json());
         }
@@ -280,7 +280,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("IBT Questionnaire submitted successfully");
-          navigate(`/matched-professionals`);
+          navigate(`/landing/video-chat`);
         } else {
           console.error("Failed to submit the IBT questionnaire", await response.json());
         }
@@ -315,7 +315,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("BDI Questionnaire submitted successfully");
-          navigate(`/matched-professionals`);
+          navigate(`/landing/video-chat`);
         } else {
           console.error("Failed to submit the BDI questionnaire", await response.json());
         }
@@ -347,7 +347,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("GAD Questionnaire submitted successfully");
-          navigate(`/matched-professionals`);
+          navigate(`/landing/video-chat`);
         } else {
           console.error("Failed to submit the GAD questionnaire", await response.json());
         }
@@ -421,7 +421,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("MMPI2 Questionnaire submitted successfully");
-          navigate(`/matched-professionals`); // Navigate or handle success
+          navigate(`/landing/video-chat`); // Navigate or handle success
         } else {
           console.error("Failed to submit the MMPI2 questionnaire", await response.json()); // Log error details
         }
@@ -454,7 +454,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
         });
 
         if (response.ok) {
-          navigate(`/matched-professionals`);
+          navigate(`/landing/video-chat`);
         } else {
           console.error("Failed to submit the questionnaire");
         }
