@@ -41,7 +41,7 @@
         "Prefer Not To Disclose",
         "Not Sure"
       ],
-      [],
+      [""],
       [
         "English",
         "Hindi",
@@ -53,7 +53,7 @@
         "Marathi",
         "Malayalam"
       ],
-      []
+      [""]
     ]
   },
   "BFT": {
@@ -641,6 +641,14 @@
       "Have you been much more social or outgoing than usual, for example, you telephoned friends in the middle of the night?"
     ],
     "options": [
+      [
+        "Yes",
+        "No"
+      ],
+      [
+        "Yes",
+        "No"
+      ],
       [
         "Yes",
         "No"

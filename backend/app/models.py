@@ -66,16 +66,16 @@ class ENNEAGRAM(models.Model):
         return f"Enneagram Responses for User: {self.user}"
 class BFTQuestionnaire(models.Model):
     user = models.CharField(max_length=100)
-    talksALot = models.IntegerField()  
-    noticesWeakPoints = models.IntegerField()  # Scale from 1 to 5
-    doesThingsCarefully = models.IntegerField()  # Scale from 1 to 5
-    isSadDepressed = models.IntegerField()  # Scale from 1 to 5
-    isOriginal = models.IntegerField()  # Scale from 1 to 5
-    keepsThoughtsToThemselves = models.IntegerField()  # Scale from 1 to 5
-    isHelpfulNotSelfish = models.IntegerField()  # Scale from 1 to 5
-    isCareless = models.IntegerField()  # Scale from 1 to 5
-    isRelaxed = models.IntegerField()  # Scale from 1 to 5
-    isCurious = models.IntegerField()  # Scale from 1 to 5
+    talksALot = models.CharField(max_length=100)
+    noticesWeakPoints = models.CharField(max_length=100)# Scale from 1 to 5
+    doesThingsCarefully = models.CharField(max_length=100)# Scale from 1 to 5
+    isSadDepressed = models.CharField(max_length=100)# Scale from 1 to 5
+    isOriginal = models.CharField(max_length=100)# Scale from 1 to 5
+    keepsThoughtsToThemselves = models.CharField(max_length=100)# Scale from 1 to 5
+    isHelpfulNotSelfish = models.CharField(max_length=100)# Scale from 1 to 5
+    isCareless = models.CharField(max_length=100)# Scale from 1 to 5
+    isRelaxed = models.CharField(max_length=100)# Scale from 1 to 5
+    isCurious = models.CharField(max_length=100)# Scale from 1 to 5
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

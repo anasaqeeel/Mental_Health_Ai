@@ -182,7 +182,7 @@ function App() {
                 <PrivateRoute>
                   <TopNav />
                   <Questionnaire questionnaireName="IBT" />
-                  <Questionnaire questions={questions} options={options} />
+                  {/* <Questionnaire questions={questions} options={options} /> */}
                   <Footer />
                 </PrivateRoute>
               }

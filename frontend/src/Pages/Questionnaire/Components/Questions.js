@@ -63,7 +63,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
     }
 
     setShowAlert(false);
-    console.log("bft mn ", questionnaireName)
+    // console.log("bft mn ", questionnaireName)
     if (questionnaireName === 'ENNEAGRAM') {
       const data = {
         user: userId || "1",  // Assigns userId if available, otherwise defaults to "1"
@@ -97,7 +97,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("Enneagram Questionnaire submitted successfully");
-          navigate(`/landing/video-chat`); // Navigate or handle success
+          navigate(`/landing`); // Navigate or handle success
         } else {
           console.error("Failed to submit the Enneagram questionnaire", await response.json());
         }
@@ -133,7 +133,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("NPQ Questionnaire submitted successfully");
-          navigate(`/landing/video-chat`);
+          navigate(`/landing`);
         } else {
           console.error("Failed to submit the NPQ questionnaire", await response.json());
         }
@@ -168,7 +168,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("ADHD Questionnaire submitted successfully");
-          navigate(`/landing/video-chat`);
+          navigate(`/landing`);
         } else {
           console.error("Failed to submit the ADHD questionnaire", await response.json());
         }
@@ -202,7 +202,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("OCIR Questionnaire submitted successfully");
-          navigate(`/landing/video-chat`);
+          navigate(`/landing`);
         } else {
           console.error("Failed to submit the OCIR questionnaire", await response.json());
         }
@@ -246,7 +246,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("MDQ Questionnaire submitted successfully");
-          navigate(`/landing/video-chat`);
+          navigate(`/landing`);
         } else {
           console.error("Failed to submit the MDQ questionnaire", await response.json());
         }
@@ -280,7 +280,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("IBT Questionnaire submitted successfully");
-          navigate(`/landing/video-chat`);
+          navigate(`/landing`);
         } else {
           console.error("Failed to submit the IBT questionnaire", await response.json());
         }
@@ -315,7 +315,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("BDI Questionnaire submitted successfully");
-          navigate(`/landing/video-chat`);
+          navigate(`/landing`);
         } else {
           console.error("Failed to submit the BDI questionnaire", await response.json());
         }
@@ -347,7 +347,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("GAD Questionnaire submitted successfully");
-          navigate(`/landing/video-chat`);
+          navigate(`/landing`);
         } else {
           console.error("Failed to submit the GAD questionnaire", await response.json());
         }
@@ -358,21 +358,21 @@ const Questionnaire = ({ questionnaireName, userId }) => {
     if (questionnaireName === 'BFT') {
       const data = {
         user: userId || "1",
-        talksALot: parseInt(answers[0], 10),  // Correctly referencing answers array
-        noticesWeakPoints: parseInt(answers[1], 10),
-        doesThingsCarefully: parseInt(answers[2], 10),
-        isSadDepressed: parseInt(answers[3], 10),
-        isOriginal: parseInt(answers[4], 10),
-        keepsThoughtsToThemselves: parseInt(answers[5], 10),
-        isHelpfulNotSelfish: parseInt(answers[6], 10),
-        isCareless: parseInt(answers[7], 10),
-        isRelaxed: parseInt(answers[8], 10),
-        isCurious: parseInt(answers[9], 10)  // Fixed isCurious reference
+        talksALot: answers[0],  // Correctly referencing answers array
+        noticesWeakPoints: answers[1],
+        doesThingsCarefully: answers[2],
+        isSadDepressed: answers[3],
+        isOriginal: answers[4],
+        keepsThoughtsToThemselves: answers[5],
+        isHelpfulNotSelfish: answers[6],
+        isCareless: answers[7],
+        isRelaxed: answers[8],
+        isCurious: answers[9]  // Fixed isCurious reference
       };
 
       console.log(data)
       try {
-        console.log("lun", questionnaireName)
+        // console.log("lun", questionnaireName)
 
         const response = await fetch('http://127.0.0.1:8000/api/bft-questionnaire/', {
           method: 'POST',
@@ -384,7 +384,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("BFT Questionnaire submitted successfully");
-          // Navigate or handle success
+          navigate(`/landing`);
         } else {
           console.error("Failed to submit the BFT questionnaire");
         }
@@ -421,7 +421,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("MMPI2 Questionnaire submitted successfully");
-          navigate(`/landing/video-chat`); // Navigate or handle success
+          navigate(`/landing`); // Navigate or handle success
         } else {
           console.error("Failed to submit the MMPI2 questionnaire", await response.json()); // Log error details
         }
@@ -431,7 +431,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
     }
 
 
-    if (questionnaireName === 'questionnaier') {
+    if (questionnaireName === 'personal') {
       const data = {
         user: userId || "1",
         typeOfTherapy: answers[0],
@@ -499,7 +499,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
     } else {
       return (
         <Form.Group controlId={`question-${currentStep}`}>
-          {questionnaireName === "IBT" ? (<img src={`/Assets/${selectedData.questions[currentStep]}`} alt={`Question ${currentStep}`} />)
+          {questionnaireName === "IBT" ? (<div className='question-image'><img src={`/Assets/${selectedData.questions[currentStep]}`} className='img-fluid' alt={`Question ${currentStep}`} /></div>)
             : (<Form.Label>{selectedData.questions[currentStep]}</Form.Label>)}
           <Form.Control
             as="select"
@@ -518,39 +518,43 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
   return (
     <div className='question-container'>
-      <div className="form-body" style={{ maxWidth: '1000px' }}>
-        <center><h1 style={{ padding: "2rem" }}>Questionnaire</h1></center>
-        <p style={{ padding: "2rem" }}>Just answer some simple questions for us to get to know you better :)</p>
-        <ProgressBar now={(currentStep + 1) / selectedData.questions.length * 100} />
+  <div className="form-body">
+    <center><h1 className="title">Questionnaire</h1></center>
+    <p className="intro-text">Just answer some simple questions for us to get to know you better :)</p>
 
-        {showAlert && (
-          <Alert variant="danger" onClose={() => setShowAlert(false)} dismissible>
-            Please answer the question before proceeding.
-          </Alert>
-        )}
-
-        <Form>
-          <div style={{ padding: "2rem" }}>
-            {renderQuestion()}
-          </div>
-        </Form>
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', padding: "2rem" }}>
-          <Button variant="secondary" onClick={handleBack} disabled={currentStep === 0}>
-            Back
-          </Button>
-          {currentStep === selectedData.questions.length - 1 ? (
-            <Button variant="primary" onClick={handleSubmit}>
-              Submit
-            </Button>
-          ) : (
-            <Button variant="primary" onClick={handleNext}>
-              Next
-            </Button>
-          )}
-        </div>
-      </div>
+    <div className="progress-wrapper">
+      <ProgressBar className="progress-bar-custom" now={(currentStep + 1) / selectedData.questions.length * 100} />
     </div>
+
+    {showAlert && (
+      <Alert variant="danger" onClose={() => setShowAlert(false)} dismissible>
+        Please answer the question before proceeding.
+      </Alert>
+    )}
+
+    <Form>
+      <div className='question'>
+        {renderQuestion()}
+      </div>
+    </Form>
+
+    <div className="button-container">
+      <Button className="btn" variant="secondary" onClick={handleBack} disabled={currentStep === 0}>
+        Back
+      </Button>
+      {currentStep === selectedData.questions.length - 1 ? (
+        <Button className="btn" variant="primary" onClick={handleSubmit}>
+          Submit
+        </Button>
+      ) : (
+        <Button className="btn" variant="primary" onClick={handleNext}>
+          Next
+        </Button>
+      )}
+    </div>
+  </div>
+</div>
+
   );
 };
 
