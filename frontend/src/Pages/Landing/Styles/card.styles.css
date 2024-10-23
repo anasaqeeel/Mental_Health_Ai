@@ -1,6 +1,19 @@
-.card{
-   transition: 0.5s; 
+.card {
+    transition: box-shadow 0.3s ease;
+    border: none;
 }
-.card:hover{
-    transform: scale(1.1);
+
+.card:hover {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card img {
+    object-fit: cover;
+    height: 200px;
+    width: 100%;
+    border-radius: 15px;
+}
+
+.card .btn {
+    border-radius: 30px;
 }

@@ -14,7 +14,7 @@ export default function Landing() {
   return (
     <div>
       {/* Video Chat Button */}
-      <div style={{ margin: '20px', textAlign: 'center' }}>
+      {/* <div style={{ margin: '20px', textAlign: 'center' }}>
         <button
           onClick={handleVideoChatClick}
           style={{
@@ -29,7 +29,7 @@ export default function Landing() {
         >
           Start Video Chat
         </button>
-      </div>
+      </div> */}
 
       {/* Other Components */}
       <SelectionPallete />

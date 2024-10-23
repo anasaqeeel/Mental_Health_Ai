@@ -90,7 +90,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("Enneagram Questionnaire submitted successfully");
-          navigate(`/landing`); // Navigate or handle success
+          navigate(`/landing`);
         } else {
           console.error("Failed to submit the Enneagram questionnaire", await response.json());
         }
@@ -351,7 +351,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
     if (questionnaireName === 'BFT') {
       const data = {
         user: userId || "1",
-        talksALot: answers[0],  // Correctly referencing answers array
+        talksALot: answers[0],
         noticesWeakPoints: answers[1],
         doesThingsCarefully: answers[2],
         isSadDepressed: answers[3],
@@ -360,12 +360,12 @@ const Questionnaire = ({ questionnaireName, userId }) => {
         isHelpfulNotSelfish: answers[6],
         isCareless: answers[7],
         isRelaxed: answers[8],
-        isCurious: answers[9]  // Fixed isCurious reference
+        isCurious: answers[9]
       };
 
       console.log(data)
       try {
-        // console.log("lun", questionnaireName)
+
 
         const response = await fetch('http://127.0.0.1:8000/api/bft-questionnaire/', {
           method: 'POST',
@@ -389,18 +389,18 @@ const Questionnaire = ({ questionnaireName, userId }) => {
     if (questionnaireName === 'MMPI2') {
       const data = {
         user: userId || "1",  // Assigns userId if available, otherwise defaults to "1"
-        rarelyWorryAboutHealth: answers[0],  // Convert to boolean
-        alwaysTellTruth: answers[1],          // Convert to boolean
-        feelTiredMostOfTheTime: answers[2],   // Convert to boolean
-        feelPunishedWithoutCause: answers[3], // Convert to boolean
-        botheredByUpsetStomach: answers[4],   // Convert to boolean
-        getLotOfHeadaches: answers[5],        // Convert to boolean
-        likeToArrangeFlowers: answers[6],      // Convert to boolean
-        someoneHasItInForMe: answers[7],       // Assuming you have a corresponding answer
-        oftenDisturbingThoughts: answers[8],   // Assuming you have a corresponding answer
-        hearThingsOthersCantHear: answers[9],  // Assuming you have a corresponding answer
-        amHappierThanMostPeople: answers[10],  // Assuming you have a corresponding answer
-        amEasilyEmbarrassed: answers[11],        // Assuming you have a corresponding answer
+        rarelyWorryAboutHealth: answers[0],
+        alwaysTellTruth: answers[1],
+        feelTiredMostOfTheTime: answers[2],
+        feelPunishedWithoutCause: answers[3],
+        botheredByUpsetStomach: answers[4],
+        getLotOfHeadaches: answers[5],
+        likeToArrangeFlowers: answers[6],
+        someoneHasItInForMe: answers[7],
+        oftenDisturbingThoughts: answers[8],
+        hearThingsOthersCantHear: answers[9],
+        amHappierThanMostPeople: answers[10],
+        amEasilyEmbarrassed: answers[11],
       };
       console.log(data)
       try {
@@ -414,7 +414,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
         if (response.ok) {
           console.log("MMPI2 Questionnaire submitted successfully");
-          navigate(`/landing`); // Navigate or handle success
+          navigate(`/landing`);
         } else {
           console.error("Failed to submit the MMPI2 questionnaire", await response.json()); // Log error details
         }
@@ -522,8 +522,8 @@ const Questionnaire = ({ questionnaireName, userId }) => {
               <h1 className="text-center mb-4 text-primary">Questionnaire</h1>
               <p className="text-center mb-4 text-muted">Just answer some simple questions for us to get to know you better :)</p>
 
-              <ProgressBar 
-                now={(currentStep + 1) / selectedData.questions.length * 100} 
+              <ProgressBar
+                now={(currentStep + 1) / selectedData.questions.length * 100}
                 className="mb-4 shadow-sm"
                 variant="info"
               />
@@ -539,25 +539,25 @@ const Questionnaire = ({ questionnaireName, userId }) => {
               </Form>
 
               <div className="d-flex justify-content-between">
-                <Button 
-                  variant="outline-secondary" 
-                  onClick={handleBack} 
+                <Button
+                  variant="outline-secondary"
+                  onClick={handleBack}
                   disabled={currentStep === 0}
                   className="shadow-sm"
                 >
                   Back
                 </Button>
                 {currentStep === selectedData.questions.length - 1 ? (
-                  <Button 
-                    variant="primary" 
+                  <Button
+                    variant="primary"
                     onClick={handleSubmit}
                     className="shadow-sm"
                   >
                     Submit
                   </Button>
                 ) : (
-                  <Button 
-                    variant="primary" 
+                  <Button
+                    variant="primary"
                     onClick={handleNext}
                     className="shadow-sm"
                   >
