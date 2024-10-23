@@ -1,48 +1,52 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Button } from "react-bootstrap";
-import Benefits from "../Assets/mental.png";
+import "bootstrap/dist/css/bootstrap.min.css";
 import "../style/pagestyle.css";
-import { ReactTyped } from "react-typed";;
-const Multipage = ({ test }) => {
-    return (
-        <>
-            {/* <div className="container-fluid"> */}
-                <div className="background">
-                    {/* <img src={Benefits} className="backgroundimg"></img> */}
-                    {test === 'PT' ? (
-                        <ReactTyped
-                            strings={['Welcome to Psychometric Testing']}
-                            typeSpeed={40}
-                            backSpeed={50}
-                            loop
-                        />) : <ReactTyped
-                        strings={['Welcome to Self-Report Testing']}
-                        typeSpeed={40}
-                        backSpeed={50}
-                        loop
-                    />}
-                </div>
-                <div className="d-flex flex-column justify-content-center align-items-center mt-5 mb-5 ">
-                    <div className="display-4 mb-5">Go through the Questionnaires for Prediction:</div>
-                    {test === "PT" ? (<div className="d-flex flex-column justify-content-center align-items-center">
-                        <Link to={"BFT"}><Button variant="primary" size="lg" className="bttn rounded-4"> Big Five Inventory</Button></Link>
-                        <Link to={"MMPI"}><Button variant="primary" size="lg" className="bttn rounded-4"> MMPI-2</Button></Link>
-                        <Link to={"IBT"}><Button variant="primary" size="lg" className="bttn rounded-4"> Rorschach Inkblot Test</Button></Link>
-                        <Link to={"NPQ"}><Button variant="primary" size="lg" className="bttn rounded-4">Neurotic Personality Questionnaire KON-2006</Button></Link>
-                        <Link to={"ENNEAGRAM"}><Button variant="primary" size="lg" className="bttn rounded-4"> Enneagram Test</Button></Link></div>) :
-                        (<>
-                            <Link to={"ADHD"}><Button variant="primary" size="lg" className="bttn rounded-4"> Adult ADHD Self-Report Scale (ASRS v1.1)</Button></Link>
-                            <Link to={"BDI"}><Button variant="primary" size="lg" className="bttn rounded-4"> Beck Depression Inventory (BDI)</Button></Link>
-                            <Link to={"OCIR"}><Button variant="primary" size="lg" className="bttn rounded-4"> Obsessive-Compulsive Inventory-Revised (OCI-R)</Button></Link>
-                            <Link to={"MDQ"}><Button variant="primary" size="lg" className="bttn rounded-4"> Mood Disorder Questionnaire (MDQ)</Button></Link>
-                            <Link to={"GAD"}><Button variant="primary" size="lg" className="bttn rounded-4">Generalized Anxiety Disorder-7 (GAD-7)</Button></Link>
-                        </>)
-                    }
-                </div>
 
-            {/* </div> */}
-        </>
-    )
+const Multipage = ({ test }) => {
+    const questionnaires = test === "PT"
+        ? [
+            { name: "Big Five Inventory", link: "BFT", color: "purple", icon: "📋" },
+            { name: "MMPI-2", link: "MMPI", color: "blue", icon: "👥" },
+            { name: "Rorschach Inkblot Test", link: "IBT", color: "green", icon: "🖼️" },
+            { name: "Neurotic Personality Questionnaire KON-2006", link: "NPQ", color: "purple", icon: "🧠" },
+            { name: "Enneagram Test", link: "ENNEAGRAM", color: "yellow", icon: "🔢" },
+        ]
+        : [
+            { name: "Adult ADHD Self-Report Scale (ASRS v1.1)", link: "ADHD", color: "purple", icon: "🔍" },
+            { name: "Beck Depression Inventory (BDI)", link: "BDI", color: "blue", icon: "😔" },
+            { name: "Obsessive-Compulsive Inventory-Revised (OCI-R)", link: "OCIR", color: "green", icon: "🔁" },
+            { name: "Mood Disorder Questionnaire (MDQ)", link: "MDQ", color: "purple", icon: "🎭" },
+            { name: "Generalized Anxiety Disorder-7 (GAD-7)", link: "GAD", color: "yellow", icon: "😰" },
+        ];
+
+    return (
+        <div className="container">
+            <div className="pt-5 d-flex flex-column justify-content-center align-items-center ">
+                <header className="text-center mb-4">
+                    <h1 className="display-4">Choose Your Questionnaire</h1>
+                    <p className="lead">Select a survey to share your valuable insights</p>
+                </header>
+
+
+                <div className="row ">
+                    {questionnaires.map((item, index) => (
+                        <div className="col-md-4 mb-4 d-flex justify-content-center" key={index}>
+                            <Link to={item.link} className="text-decoration-none w-100">
+                                <div className="card shadow-lg h-100">
+                                    <div className="card-body text-center">
+                                        <div className="mb-3" style={{ fontSize: '2rem' }}>{item.icon}</div>
+                                        <h5 className="card-title">{item.name}</h5>
+                                        <p className="card-text text-muted">Click to start the survey</p>
+                                    </div>
+                                </div>
+                            </Link>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
 }
+
 export default Multipage;

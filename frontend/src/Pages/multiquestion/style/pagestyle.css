@@ -1,44 +1,86 @@
-.bttn{
-    width:70vw;
-    margin-bottom: 30px;
-}
-.background{
-    width:98.9vw;
-    height:100vh;
-    background: url(../Assets/mental.png);
-    background-repeat: no-repeat;
-    background-size: cover;
+.page {
+    min-height: 100vh;
+    background-color: #f0f0f0;
+    padding: 2rem 1rem;
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+  
+  .title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+  
+  .subtitle {
+    font-size: 1.25rem;
+    color: #666;
+  }
+  
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+  }
+  
+  .link {
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  .iconWrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
     display: flex;
-    direction: column;
-    justify-content: center;
     align-items: center;
-    color: aliceblue;
-    font-size: 44px;
-
-    
-}
-.background img{
-    width:100%;
-    height: 100%;
-
-}
-@media (max-width: 576px) {
-    .background {
-        width:100vw;
-    height:100vh;
-        background: url(../Assets/mental.png);
-        background-repeat: no-repeat;
-        background-size: fill;
-      font-size: 24px;
-    }
+    justify-content: center;
+    margin: 0 auto 1rem;
+  }
   
- 
-}
-@media (max-width: 576px) {
-    .background {
-    
-      font-size: 34px;
-    }
+  .icon {
+    font-size: 2rem;
+  }
   
- 
-}
+  .cardTitle {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+  
+  .cardSubtitle {
+    font-size: 0.875rem;
+    color: #666;
+  }
+  
+  .purple .iconWrapper { background-color: #9f7aea; }
+  .blue .iconWrapper { background-color: #4299e1; }
+  .green .iconWrapper { background-color: #48bb78; }
+  .yellow .iconWrapper { background-color: #ecc94b; }
+  
+  .purple .icon, .blue .icon, .green .icon { color: white; }
+  .yellow .icon { color: #333; }

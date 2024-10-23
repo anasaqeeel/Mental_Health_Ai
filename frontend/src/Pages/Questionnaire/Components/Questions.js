@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { ProgressBar, Button, Form, Alert } from 'react-bootstrap';
-import '../Styles/questions.styles.css';
+import React, { useState } from 'react';
+import { ProgressBar, Button, Form, Alert, Card, Container, Row, Col } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import 'react-datepicker/dist/react-datepicker.css';
+import '../Styles/questions.styles.css';
 
 import questionsData from './quest.json';
 
@@ -17,18 +17,11 @@ const Questionnaire = ({ questionnaireName, userId }) => {
   const [dateOfBirth, setDateOfBirth] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
 
-  useEffect(() => {
-    console.log("Updated dateOfBirth:", dateOfBirth);
-  }, [dateOfBirth]);
   const handleNext = () => {
-    console.log({ dateOfBirth });
-    console.log(selectedData.questions[currentStep]);
     if (dateOfBirth === null && selectedData.questions[currentStep] === "What is your date of birth?") {
-      console.log({ dateOfBirth });
       setShowAlert(true);
       return;
     } else if (!answers[currentStep] && selectedData.questions[currentStep] !== "What is your date of birth?" && currentStep !== selectedData.questions.length - 1) {
-      console.log("hello")
       setShowAlert(true);
       return;
     }
@@ -467,94 +460,116 @@ const Questionnaire = ({ questionnaireName, userId }) => {
   const renderQuestion = () => {
     if (selectedData.questions[currentStep] === "What is your date of birth?") {
       return (
-        <div>
-          <Form.Label>{selectedData.questions[currentStep]}</Form.Label>
+        <Form.Group className="mb-4">
+          <Form.Label className="fw-bold">{selectedData.questions[currentStep]}</Form.Label>
           <DatePicker
             selected={dateOfBirth}
-            onChange={(date) => {
-              setDateOfBirth(date);
-              console.log("Selected Date:", date);
-            }}
-
+            onChange={(date) => setDateOfBirth(date)}
             dateFormat="dd/MM/yyyy"
             placeholderText="dd/mm/yyyy"
             className="form-control"
           />
-        </div>
+        </Form.Group>
       );
     } else if (selectedData.questions[currentStep] === "Do you have any additional comments or concerns?" || questionnaireName === "IBT") {
       return (
-        <Form.Group controlId={`question-${currentStep}`}>
-          {questionnaireName === "IBT" ? (<><img className='btnn' src={`/Assets/${selectedData.questions[currentStep]}`} alt={`Question ${currentStep}`} />
-            <Form.Label>What is the First thing that U see</Form.Label></>)
-            : (<Form.Label>{selectedData.questions[currentStep]}</Form.Label>)}
+        <Form.Group className="mb-4">
+          {questionnaireName === "IBT" && (
+            <div className="mb-3">
+              <img src={`/Assets/${selectedData.questions[currentStep]}`} alt={`Question ${currentStep}`} className="img-fluid rounded shadow" />
+            </div>
+          )}
+          <Form.Label className="fw-bold">{questionnaireName === "IBT" ? "What is the first thing that you see?" : selectedData.questions[currentStep]}</Form.Label>
           <Form.Control
             as="textarea"
             rows={3}
             value={answers[currentStep]}
             onChange={handleInputChange}
+            className="shadow-sm"
           />
         </Form.Group>
       );
     } else {
       return (
-        <Form.Group controlId={`question-${currentStep}`}>
-          {questionnaireName === "IBT" ? (<div className='question-image'><img src={`/Assets/${selectedData.questions[currentStep]}`} className='img-fluid' alt={`Question ${currentStep}`} /></div>)
-            : (<Form.Label>{selectedData.questions[currentStep]}</Form.Label>)}
-          <Form.Control
-            as="select"
+        <Form.Group className="mb-4">
+          {questionnaireName === "IBT" && (
+            <div className="mb-3">
+              <img src={`/Assets/${selectedData.questions[currentStep]}`} alt={`Question ${currentStep}`} className="img-fluid rounded shadow" />
+            </div>
+          )}
+          <Form.Label className="fw-bold">{selectedData.questions[currentStep]}</Form.Label>
+          <Form.Select
             value={answers[currentStep]}
             onChange={handleInputChange}
+            className="shadow-sm"
           >
             <option value="">Select an option</option>
             {selectedData.options[currentStep].map((option, index) => (
               <option key={index} value={option}>{option}</option>
             ))}
-          </Form.Control>
+          </Form.Select>
         </Form.Group>
       );
     }
   };
 
   return (
-    <div className='question-container'>
-  <div className="form-body">
-    <center><h1 className="title">Questionnaire</h1></center>
-    <p className="intro-text">Just answer some simple questions for us to get to know you better :)</p>
+    <Container className="py-5">
+      <Row className="justify-content-center">
+        <Col md={8} lg={6}>
+          <Card className="shadow-lg">
+            <Card.Body className="p-4">
+              <h1 className="text-center mb-4 text-primary">Questionnaire</h1>
+              <p className="text-center mb-4 text-muted">Just answer some simple questions for us to get to know you better :)</p>
 
-    <div className="progress-wrapper">
-      <ProgressBar className="progress-bar-custom" now={(currentStep + 1) / selectedData.questions.length * 100} />
-    </div>
+              <ProgressBar 
+                now={(currentStep + 1) / selectedData.questions.length * 100} 
+                className="mb-4 shadow-sm"
+                variant="info"
+              />
 
-    {showAlert && (
-      <Alert variant="danger" onClose={() => setShowAlert(false)} dismissible>
-        Please answer the question before proceeding.
-      </Alert>
-    )}
+              {showAlert && (
+                <Alert variant="danger" onClose={() => setShowAlert(false)} dismissible className="mb-4">
+                  Please answer the question before proceeding.
+                </Alert>
+              )}
 
-    <Form>
-      <div className='question'>
-        {renderQuestion()}
-      </div>
-    </Form>
+              <Form className="mb-4">
+                {renderQuestion()}
+              </Form>
 
-    <div className="button-container">
-      <Button className="btn" variant="secondary" onClick={handleBack} disabled={currentStep === 0}>
-        Back
-      </Button>
-      {currentStep === selectedData.questions.length - 1 ? (
-        <Button className="btn" variant="primary" onClick={handleSubmit}>
-          Submit
-        </Button>
-      ) : (
-        <Button className="btn" variant="primary" onClick={handleNext}>
-          Next
-        </Button>
-      )}
-    </div>
-  </div>
-</div>
-
+              <div className="d-flex justify-content-between">
+                <Button 
+                  variant="outline-secondary" 
+                  onClick={handleBack} 
+                  disabled={currentStep === 0}
+                  className="shadow-sm"
+                >
+                  Back
+                </Button>
+                {currentStep === selectedData.questions.length - 1 ? (
+                  <Button 
+                    variant="primary" 
+                    onClick={handleSubmit}
+                    className="shadow-sm"
+                  >
+                    Submit
+                  </Button>
+                ) : (
+                  <Button 
+                    variant="primary" 
+                    onClick={handleNext}
+                    className="shadow-sm"
+                  >
+                    Next
+                  </Button>
+                )}
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 
