@@ -57,6 +57,22 @@ from app.VideoAnalysis.speechToText import audio_to_text,video_to_audio
 from app.VideoAnalysis.emotionDetector import analyze_emotions, summarize_emotions
 from app.TextAnalysis.Diagnoser import Diagnose
 
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import UserProfile, ADHD, GAD, MDQ  # Ensure MDQ is imported
+
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import UserProfile, ADHD, GAD, MDQ, BDI  # Ensure BDI is imported
+
 class QuestionnaireReportPDFView(APIView):
     def get(self, request, user_id, questionnaire_type):
         # Log the request
@@ -73,16 +89,89 @@ class QuestionnaireReportPDFView(APIView):
         questionnaire = None
         if questionnaire_type == "ADHD":
             try:
-                # If there's no created_at field, we just take the first result
                 questionnaire = ADHD.objects.filter(user=user_profile).first()
-
                 if not questionnaire:
                     print(f"ADHD Questionnaire not found for user: {user_profile.name}")
                     return Response({"error": "ADHD Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
-
             except ADHD.DoesNotExist:
                 print(f"ADHD Questionnaire not found for user: {user_profile.name}")
                 return Response({"error": "ADHD Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif questionnaire_type == "GAD":
+            try:
+                questionnaire = GAD.objects.filter(user=user_profile).first()
+                if not questionnaire:
+                    print(f"GAD Questionnaire not found for user: {user_profile.name}")
+                    return Response({"error": "GAD Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+            except GAD.DoesNotExist:
+                print(f"GAD Questionnaire not found for user: {user_profile.name}")
+                return Response({"error": "GAD Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        elif questionnaire_type == "MDQ":
+            try:
+                questionnaire = MDQ.objects.filter(user=user_profile).first()
+                if not questionnaire:
+                    print(f"MDQ Questionnaire not found for user: {user_profile.name}")
+                    return Response({"error": "MDQ Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+            except MDQ.DoesNotExist:
+                print(f"MDQ Questionnaire not found for user: {user_profile.name}")
+                return Response({"error": "MDQ Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        elif questionnaire_type == "BDI":
+            try:
+                questionnaire = BDI.objects.filter(user=user_profile).first()
+                if not questionnaire:
+                    print(f"BDI Questionnaire not found for user: {user_profile.name}")
+                    return Response({"error": "BDI Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+            except BDI.DoesNotExist:
+                print(f"BDI Questionnaire not found for user: {user_profile.name}")
+                return Response({"error": "BDI Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+        if questionnaire_type == "NPQ":
+            try:
+                questionnaire = NPQ.objects.filter(user=user_profile.firebase_uid).first()
+                if not questionnaire:
+                    print(f"NPQ Questionnaire not found for user: {user_profile.name}")
+                    return Response({"error": "NPQ Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+            except NPQ.DoesNotExist:
+                print(f"NPQ Questionnaire not found for user: {user_profile.name}")
+                return Response({"error": "NPQ Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+        elif questionnaire_type == "BFT":
+            try:
+                questionnaire = BFTQuestionnaire.objects.filter(user=user_profile.firebase_uid).first()
+                if not questionnaire:
+                    print(f"BFT Questionnaire not found for user: {user_profile.name}")
+                    return Response({"error": "BFT Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+            except BFTQuestionnaire.DoesNotExist:
+                print(f"BFT Questionnaire not found for user: {user_profile.name}")
+                return Response({"error": "BFT Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+        elif questionnaire_type == "OCIR":
+            try:
+                questionnaire = OCIR.objects.filter(user=user_profile).first()
+                if not questionnaire:
+                    print(f"OCIR Questionnaire not found for user: {user_profile.name}")
+                    return Response({"error": "OCIR Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+            except OCIR.DoesNotExist:
+                print(f"OCIR Questionnaire not found for user: {user_profile.name}")
+                return Response({"error": "OCIR Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+        elif questionnaire_type == "MMPI2Questionnaire":
+            try:
+                questionnaire = MMPI2Questionnaire.objects.filter(user=user_profile).first()
+                if not questionnaire:
+                    print(f"OCIR Questionnaire not found for user: {user_profile.name}")
+                    return Response({"error": "OCIR Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+            except MMPI2Questionnaire.DoesNotExist:
+                print(f"OCIR Questionnaire not found for user: {user_profile.name}")
+                return Response({"error": "OCIR Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+        elif questionnaire_type == "ENNEAGRAM":
+            try:
+                questionnaire = ENNEAGRAM.objects.filter(user=user_profile).first()
+                if not questionnaire:
+                    print(f"OCIR Questionnaire not found for user: {user_profile.name}")
+                    return Response({"error": "OCIR Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+            except ENNEAGRAM.DoesNotExist:
+                print(f"OCIR Questionnaire not found for user: {user_profile.name}")
+                return Response({"error": "OCIR Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+
 
         # Create PDF response
         response = HttpResponse(content_type='application/pdf')
@@ -92,7 +181,6 @@ class QuestionnaireReportPDFView(APIView):
         p = canvas.Canvas(response, pagesize=letter)
         p.drawString(100, 750, f"{questionnaire_type} Report for User: {user_profile.name}")
 
-        # Add all fields for ADHD
         if questionnaire_type == "ADHD":
             p.drawString(100, 730, f"Trouble Wrapping Up Final Details: {questionnaire.troubleWrappingUpFinalDetails}")
             p.drawString(100, 710, f"Difficulty Getting Organized: {questionnaire.difficultyGettingOrganized}")
@@ -105,10 +193,118 @@ class QuestionnaireReportPDFView(APIView):
             p.drawString(100, 570, f"Difficulty Concentrating on Direct Speech: {questionnaire.difficultyConcentratingOnDirectSpeech}")
             p.drawString(100, 550, f"Misplace or Difficulty Finding Things: {questionnaire.misplaceOrDifficultyFindingThings}")
 
+        elif questionnaire_type == "GAD":
+            p.drawString(100, 730, f"Feeling Nervous: {questionnaire.feelingNervous}")
+            p.drawString(100, 710, f"Inability to Control Worrying: {questionnaire.inabilityToControlWorrying}")
+            p.drawString(100, 690, f"Excessive Worrying: {questionnaire.excessiveWorrying}")
+            p.drawString(100, 670, f"Trouble Relaxing: {questionnaire.troubleRelaxing}")
+            p.drawString(100, 650, f"Restlessness: {questionnaire.restlessness}")
+            p.drawString(100, 630, f"Irritability: {questionnaire.irritability}")
+            p.drawString(100, 610, f"Fear of Something Awful: {questionnaire.fearOfSomethingAwful}")
+
+        elif questionnaire_type == "MDQ":
+            p.drawString(100, 730, f"Feel Dependent On Others: {questionnaire.feelDependentOnOthers}")
+            p.drawString(100, 710, f"Avoid Independent Decision Making: {questionnaire.avoidIndependentDecisionMaking}")
+            p.drawString(100, 690, f"Feel Weak Or Tired: {questionnaire.feelWeakOrTired}")
+            p.drawString(100, 670, f"Difficulty Concentrating: {questionnaire.difficultyConcentrating}")
+            p.drawString(100, 650, f"Feel Dissatisfied With Self: {questionnaire.feelDissatisfiedWithSelf}")
+            p.drawString(100, 630, f"Consider Self A Failure: {questionnaire.considerSelfAFailure}")
+            p.drawString(100, 610, f"Trouble Controlling Temper: {questionnaire.troubleControllingTemper}")
+            p.drawString(100, 590, f"Hesitate When Making Decisions: {questionnaire.hesitateWhenMakingDecisions}")
+            p.drawString(100, 570, f"Rely On Others For Decisions: {questionnaire.relyOnOthersForDecisions}")
+            p.drawString(100, 550, f"Feel Hyper To The Point Of Concern: {questionnaire.feelHyperToThePointOfConcern}")
+            p.drawString(100, 530, f"Irritability Leading To Conflict: {questionnaire.irritabilityLeadingToConflict}")
+            p.drawString(100, 510, f"Increased Self Confidence: {questionnaire.increasedSelfConfidence}")
+            p.drawString(100, 490, f"Less Sleep Than Usual: {questionnaire.lessSleepThanUsual}")
+            p.drawString(100, 470, f"More Talkative Than Usual: {questionnaire.moreTalkativeThanUsual}")
+            p.drawString(100, 450, f"Racing Thoughts: {questionnaire.racingThoughts}")
+            p.drawString(100, 430, f"Easily Distracted: {questionnaire.easilyDistracted}")
+            p.drawString(100, 410, f"More Energy Than Usual: {questionnaire.moreEnergyThanUsual}")
+            p.drawString(100, 390, f"More Active Than Usual: {questionnaire.moreActiveThanUsual}")
+            p.drawString(100, 370, f"More Social Than Usual: {questionnaire.moreSocialThanUsual}")
+        
+        if questionnaire_type == "NPQ":
+            p.drawString(100, 730, f"Feel Dependent On Others: {questionnaire.feelDependentOnOthers}")
+            p.drawString(100, 710, f"Avoid Independent Decisions: {questionnaire.avoidIndependentDecisions}")
+            p.drawString(100, 690, f"Feel Weak Or Tired: {questionnaire.feelWeakOrTired}")
+            p.drawString(100, 670, f"Find It Difficult To Concentrate: {questionnaire.findItDifficultToConcentrate}")
+            p.drawString(100, 650, f"Frequently Dissatisfied With Self: {questionnaire.frequentlyDissatisfiedWithSelf}")
+            p.drawString(100, 630, f"Consider Self A Failure: {questionnaire.considerSelfAFailure}")
+            p.drawString(100, 610, f"Trouble Controlling Temper: {questionnaire.troubleControllingTemper}")
+            p.drawString(100, 590, f"Hesitate When Making Decisions: {questionnaire.hesitateWhenMakingDecisions}")
+            p.drawString(100, 570, f"Rely On Others For Decisions: {questionnaire.relyOnOthersForDecisions}")
+        elif questionnaire_type == "BFT":
+            p.drawString(100, 730, f"Talks A Lot: {questionnaire.talksALot}")
+            p.drawString(100, 710, f"Notices Weak Points: {questionnaire.noticesWeakPoints}")
+            p.drawString(100, 690, f"Does Things Carefully: {questionnaire.doesThingsCarefully}")
+            p.drawString(100, 670, f"Is Sad/Depressed: {questionnaire.isSadDepressed}")
+            p.drawString(100, 650, f"Is Original: {questionnaire.isOriginal}")
+            p.drawString(100, 630, f"Keeps Thoughts to Themselves: {questionnaire.keepsThoughtsToThemselves}")
+            p.drawString(100, 610, f"Is Helpful Not Selfish: {questionnaire.isHelpfulNotSelfish}")
+            p.drawString(100, 590, f"Is Careless: {questionnaire.isCareless}")
+            p.drawString(100, 570, f"Is Relaxed: {questionnaire.isRelaxed}")
+            p.drawString(100, 550, f"Is Curious: {questionnaire.isCurious}")
+        elif questionnaire_type == "OCIR":
+            p.drawString(100, 730, f"Saved Too Many Things: {questionnaire.savedTooManyThings}")
+            p.drawString(100, 710, f"Check Things More Often: {questionnaire.checkThingsMoreOften}")
+            p.drawString(100, 690, f"Upset If Not Arranged Properly: {questionnaire.upsetIfNotArrangedProperly}")
+            p.drawString(100, 670, f"Compelled To Count: {questionnaire.compelledToCount}")
+            p.drawString(100, 650, f"Difficult To Touch Touched Objects: {questionnaire.difficultToTouchTouchedObjects}")
+            p.drawString(100, 630, f"Difficult To Control Thoughts: {questionnaire.difficultToControlThoughts}")
+            p.drawString(100, 610, f"Collect Unnecessary Things: {questionnaire.collectUnnecessaryThings}")
+            p.drawString(100, 590, f"Repeatedly Check Items: {questionnaire.repeatedlyCheckItems}")
+            p.drawString(100, 570, f"Upset If Others Change Arrangement: {questionnaire.upsetIfOthersChangeArrangement}")
+            p.drawString(100, 550, f"Feel Compelled To Repeat Numbers: {questionnaire.feelCompelledToRepeatNumbers}")
+
+
+        elif questionnaire_type == "BDI":
+            p.drawString(100, 730, f"Feelings Of Sadness: {questionnaire.feelingsOfSadness}")
+            p.drawString(100, 710, f"Thoughts About Future: {questionnaire.thoughtsAboutFuture}")
+            p.drawString(100, 690, f"Definition Of Success: {questionnaire.definitionOfSuccess}")
+            p.drawString(100, 670, f"Ability To Experience Pleasure: {questionnaire.abilityToExperiencePleasure}")
+            p.drawString(100, 650, f"Negative Self Statements: {questionnaire.negativeSelfStatements}")
+            p.drawString(100, 630, f"Feelings Of Punishment: {questionnaire.feelingsOfPunishment}")
+            p.drawString(100, 610, f"Disappointments In Self: {questionnaire.disappointmentsInSelf}")
+            p.drawString(100, 590, f"Handling Self Criticism: {questionnaire.handlingSelfCriticism}")
+            p.drawString(100, 570, f"Thoughts Of Self Harm: {questionnaire.thoughtsOfSelfHarm}")
+            p.drawString(100, 550, f"Frequency Of Crying: {questionnaire.frequencyOfCrying}")
+        elif questionnaire_type == "ENNEAGRAM":
+            p.drawString(100, 730, f"Creative Artistic View: {questionnaire.creativeArtisticView}")
+            p.drawString(100, 710, f"Feel Different From Others: {questionnaire.feelDifferentFromOthers}")
+            p.drawString(100, 690, f"Experience Melancholy: {questionnaire.experienceMelancholy}")
+            p.drawString(100, 670, f"Overly Sensitive: {questionnaire.overlySensitive}")
+            p.drawString(100, 650, f"Feel Something Is Missing: {questionnaire.feelSomethingIsMissing}")
+            p.drawString(100, 630, f"Feel Envious Of Others: {questionnaire.feelEnviousOfOthers}")
+            p.drawString(100, 610, f"Thrive In Creative Environments: {questionnaire.thriveInCreativeEnvironments}")
+            p.drawString(100, 590, f"Become Withdrawn When Misunderstood: {questionnaire.canBecomeWithdrawnWhenMisunderstood}")
+            p.drawString(100, 570, f"Romantic Longing: {questionnaire.romanticLonging}")
+            p.drawString(100, 550, f"Caught In Fantasy World: {questionnaire.caughtInFantasyWorld}")
+            p.drawString(100, 530, f"Enjoy Unique Elegant Things: {questionnaire.enjoyUniqueElegantThings}")
+            p.drawString(100, 510, f"Moody When Stressed: {questionnaire.moodyWhenStressed}")
+            p.drawString(100, 490, f"Reflective And Search For Meaning: {questionnaire.reflectiveAndSearchForMeaning}")
+            p.drawString(100, 470, f"Strive To Be Unique: {questionnaire.striveToBeUnique}")
+            p.drawString(100, 450, f"Manners And Good Taste: {questionnaire.mannersAndGoodTaste}")
+            p.drawString(100, 430, f"Seen As Overly Dramatic: {questionnaire.seenAsOverlyDramatic}")
+            p.drawString(100, 410, f"Important To Understand Feelings: {questionnaire.importantToUnderstandFeelings}")
+        elif questionnaire_type == "MMPI2Questionnaire":
+            p.drawString(100, 730, f"Rarely Worry About Health: {questionnaire.rarelyWorryAboutHealth}")
+            p.drawString(100, 710, f"Always Tell The Truth: {questionnaire.alwaysTellTruth}")
+            p.drawString(100, 690, f"Feel Tired Most Of The Time: {questionnaire.feelTiredMostOfTheTime}")
+            p.drawString(100, 670, f"Feel Punished Without Cause: {questionnaire.feelPunishedWithoutCause}")
+            p.drawString(100, 650, f"Bothered By Upset Stomach: {questionnaire.botheredByUpsetStomach}")
+            p.drawString(100, 630, f"Get A Lot Of Headaches: {questionnaire.getLotOfHeadaches}")
+            p.drawString(100, 610, f"Like To Arrange Flowers: {questionnaire.likeToArrangeFlowers}")
+            p.drawString(100, 590, f"Someone Has It In For Me: {questionnaire.someoneHasItInForMe}")
+            p.drawString(100, 570, f"Often Disturbing Thoughts: {questionnaire.oftenDisturbingThoughts}")
+            p.drawString(100, 550, f"Hear Things Others Can't Hear: {questionnaire.hearThingsOthersCantHear}")
+            p.drawString(100, 530, f"Am Happier Than Most People: {questionnaire.amHappierThanMostPeople}")
+            p.drawString(100, 510, f"Am Easily Embarrassed: {questionnaire.amEasilyEmbarrassed}")
+
         p.showPage()
         p.save()
-        return response
+        print(f"PDF report generated successfully for user: {user_profile.name}, questionnaire type: {questionnaire_type}")
 
+        return response
 
 
 class UserProfileViewSet(viewsets.ModelViewSet):
