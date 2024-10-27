@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import UserProfileViewSet, ENNEAGRAMViewSet, VideoViewSet, MMPI2QuestionnaireViewSet, UploadVideoView, UserQuestionnaireCreateView, get_matched_professionals, BFTQuestionnaireCreateView,NPQViewSet,NPQViewSet, ADHDViewSet, BDIViewSet, GADViewSet,MDQViewSet,OCIRViewSet,IBTViewSet
+from .views import UserProfileViewSet, ENNEAGRAMViewSet, VideoViewSet, MMPI2QuestionnaireViewSet, UploadVideoView, UserQuestionnaireCreateView, get_matched_professionals, BFTQuestionnaireCreateView,NPQViewSet,NPQViewSet, ADHDViewSet, BDIViewSet, GADViewSet,MDQViewSet,OCIRViewSet,IBTViewSet, QuestionnaireReportPDFView
 
 router = DefaultRouter()
 # router.register(r'users', UserProfileViewSet)
@@ -47,5 +47,8 @@ urlpatterns = [
     # IBT
     path('api/ibt/', IBTViewSet.as_view({'get': 'list', 'post': 'create'}), name='ibt-list'),
     path('api/ibt/<int:pk>/', IBTViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='ibt-detail'),
+
+    #report
+   path('api/questionnaire/report/<str:user_id>/<str:questionnaire_type>/', QuestionnaireReportPDFView.as_view(), name='questionnaire-report'),
 
 ]

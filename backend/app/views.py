@@ -1,4 +1,16 @@
 from rest_framework import viewsets
+
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from django.http import HttpResponse
+from rest_framework.views import APIView
+from .models import (
+    UserProfile, UserQuestionnaire, ENNEAGRAM, NPQ, ADHD, 
+    BFTQuestionnaire, MMPI2Questionnaire, BDI, GAD, OCIR, MDQ, IBT
+)
+from rest_framework import status
+from rest_framework.response import Response
+
 from .models import (
     UserProfile,
     Video,
@@ -44,6 +56,60 @@ from rest_framework.views import APIView
 from app.VideoAnalysis.speechToText import audio_to_text,video_to_audio
 from app.VideoAnalysis.emotionDetector import analyze_emotions, summarize_emotions
 from app.TextAnalysis.Diagnoser import Diagnose
+
+class QuestionnaireReportPDFView(APIView):
+    def get(self, request, user_id, questionnaire_type):
+        # Log the request
+        print(f"Received request for report generation. User ID: {user_id}, Questionnaire Type: {questionnaire_type}")
+
+        # Fetch the user's profile by firebase_uid (not by the 'id')
+        try:
+            user_profile = UserProfile.objects.get(firebase_uid=user_id)
+        except UserProfile.DoesNotExist:
+            print(f"UserProfile not found for user_id: {user_id}")
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Fetch the corresponding questionnaire data based on the questionnaire_type
+        questionnaire = None
+        if questionnaire_type == "ADHD":
+            try:
+                # If there's no created_at field, we just take the first result
+                questionnaire = ADHD.objects.filter(user=user_profile).first()
+
+                if not questionnaire:
+                    print(f"ADHD Questionnaire not found for user: {user_profile.name}")
+                    return Response({"error": "ADHD Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            except ADHD.DoesNotExist:
+                print(f"ADHD Questionnaire not found for user: {user_profile.name}")
+                return Response({"error": "ADHD Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Create PDF response
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{questionnaire_type}_Report_{user_id}.pdf"'
+
+        # Generate the PDF content
+        p = canvas.Canvas(response, pagesize=letter)
+        p.drawString(100, 750, f"{questionnaire_type} Report for User: {user_profile.name}")
+
+        # Add all fields for ADHD
+        if questionnaire_type == "ADHD":
+            p.drawString(100, 730, f"Trouble Wrapping Up Final Details: {questionnaire.troubleWrappingUpFinalDetails}")
+            p.drawString(100, 710, f"Difficulty Getting Organized: {questionnaire.difficultyGettingOrganized}")
+            p.drawString(100, 690, f"Problems Remembering Appointments: {questionnaire.problemsRememberingAppointments}")
+            p.drawString(100, 670, f"Avoid Delaying Thought-Intensive Tasks: {questionnaire.avoidDelayingThoughtIntensiveTasks}")
+            p.drawString(100, 650, f"Fidget or Squirm When Sitting: {questionnaire.fidgetOrSquirmWhenSitting}")
+            p.drawString(100, 630, f"Feel Overly Active or Compelled: {questionnaire.feelOverlyActiveCompelled}")
+            p.drawString(100, 610, f"Make Careless Mistakes: {questionnaire.makeCarelessMistakes}")
+            p.drawString(100, 590, f"Difficulty Keeping Attention: {questionnaire.difficultyKeepingAttention}")
+            p.drawString(100, 570, f"Difficulty Concentrating on Direct Speech: {questionnaire.difficultyConcentratingOnDirectSpeech}")
+            p.drawString(100, 550, f"Misplace or Difficulty Finding Things: {questionnaire.misplaceOrDifficultyFindingThings}")
+
+        p.showPage()
+        p.save()
+        return response
+
+
 
 class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
@@ -131,7 +197,17 @@ class UploadVideoView(APIView):
 class ADHDViewSet(viewsets.ModelViewSet):
     queryset = ADHD.objects.all()
     serializer_class = ADHDSerializer
-
+    def create(self, request, *args, **kwargs):
+        # Get the user by firebase_uid passed from the frontend
+        user_profile = UserProfile.objects.get(firebase_uid=request.data['user'])  # Ensure this exists
+        adhd_data = request.data.copy()  # Create a mutable copy of the data
+        adhd_data['user'] = user_profile.id  # Assign the user profile to the 'user' field
+        
+        serializer = self.get_serializer(data=adhd_data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class IBTViewSet(viewsets.ModelViewSet):
     queryset = IBT.objects.all()

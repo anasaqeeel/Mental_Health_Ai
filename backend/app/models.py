@@ -1,6 +1,10 @@
 from django.db import models
+from django.utils import timezone
+
 
 class UserProfile(models.Model):
+   # Set a default value for firebase_uid in models.py
+    firebase_uid = models.CharField(max_length=100, unique=True)
     name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -96,9 +100,6 @@ class MHProfessional(models.Model):
     specialization=models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
 
-
-
-
 class MMPI2Questionnaire(models.Model):
     user = models.CharField(max_length=100)
     rarelyWorryAboutHealth = models.BooleanField(default=False)
@@ -132,17 +133,19 @@ class NPQ(models.Model):
     def __str__(self):
         return f"NPQ Responses for User: {self.user}"
 class ADHD(models.Model):
-    user = models.CharField(max_length=100)
-    troubleWrappingUpFinalDetails = models.CharField(max_length=100)
-    difficultyGettingOrganized = models.CharField(max_length=100)
-    problemsRememberingAppointments = models.CharField(max_length=100)
-    avoidDelayingThoughtIntensiveTasks = models.CharField(max_length=100)
-    fidgetOrSquirmWhenSitting = models.CharField(max_length=100)
-    feelOverlyActiveCompelled = models.CharField(max_length=100)
-    makeCarelessMistakes = models.CharField(max_length=100)
-    difficultyKeepingAttention = models.CharField(max_length=100)
-    difficultyConcentratingOnDirectSpeech = models.CharField(max_length=100)
-    misplaceOrDifficultyFindingThings = models.CharField(max_length=100)
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    troubleWrappingUpFinalDetails = models.CharField(max_length=255)
+    difficultyGettingOrganized = models.CharField(max_length=255)
+    problemsRememberingAppointments = models.CharField(max_length=255)
+    avoidDelayingThoughtIntensiveTasks = models.CharField(max_length=255)
+    fidgetOrSquirmWhenSitting = models.CharField(max_length=255)
+    feelOverlyActiveCompelled = models.CharField(max_length=255)
+    makeCarelessMistakes = models.CharField(max_length=255)
+    difficultyKeepingAttention = models.CharField(max_length=255)
+    difficultyConcentratingOnDirectSpeech = models.CharField(max_length=255)
+    misplaceOrDifficultyFindingThings = models.CharField(max_length=255)
+    
+    created_at = models.DateTimeField(default=timezone.now)  # Add this field
 
     def __str__(self):
         return f"ADHD Responses for User: {self.user}"
