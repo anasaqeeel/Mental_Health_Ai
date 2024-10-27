@@ -18,7 +18,8 @@ import PrivateRoute from './Components/PrivateRoute';
 import Multipage from './Pages/multiquestion/component/multipage';
 import questions from './Pages/Questionnaire/Components/Questions';
 import options from './Pages/Questionnaire/Components/Questions';
-import VideoChat from './Pages/VideoChat/VideoChat'
+import VideoChat from './Pages/VideoChat/VideoChat';
+import Carousel from './Pages/Landing/Components/Carousal';
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
               element={
                 <PrivateRoute>
                   <TopNav />
+                  <Carousel/>
                   <Landing />
                   <GeneralChat />
                   <Footer />

@@ -6,6 +6,12 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import { useAuth } from '../../Login/Components/AuthContext';
 import Translate from '../../Translate';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import '../Styles/navbarStyle.css'
+
+
+
 export default function TopNav() {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
@@ -24,44 +30,44 @@ export default function TopNav() {
   };
 
   return (
-    <div>
-      <Navbar expand="lg" className="bg-body-tertiary" data-bs-theme="dark" sticky="top">
-        <Container style={{ marginLeft: '1rem' }}>
-          <Navbar.Brand href="/">Home</Navbar.Brand>
+    <>
+      {/* <style>{navbarStyle}</style> */}
+      <Navbar expand="lg" className="custom-navbar" sticky="top">
+        <Container fluid>
+          <Navbar.Brand href="/">Therapy Is Healing</Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="me-auto">
-              <Nav.Link href="interview">Take An Interview</Nav.Link>
-              <Nav.Link href="questionnaire">Seek Help</Nav.Link>
-              <Button
-                variant="outline-light"
-                onClick={handleVideoChatClick}
-                style={{
-                  marginLeft: '20px',
-                  padding: '8px 15px',
-                  fontSize: '14px',
-                  borderRadius: '20px',
-                  borderColor: '#fff',
-                  color: '#fff'
-                }}
-              >
-                Start Video Chat
-              </Button>
-            </Nav>
+          <Navbar.Collapse id="basic-navbar-nav" >
+            {/* <div className="justify-content-around"> */}
+              <Nav className="mx-auto">
+                <Nav.Link href="/interview">Take An Interview</Nav.Link>
+                <Nav.Link href="/questionnaire">Seek Help</Nav.Link>
+                <Nav.Link onClick={handleVideoChatClick}>Start Video Chat</Nav.Link>
+              </Nav>
+              <Nav>
+                {currentUser ? (
+                  <Button
+                    variant="outline-light"
+                    className="logout-button"
+                    onClick={handleLogout}
+                    aria-label="Logout"
+                  >
+                    <FontAwesomeIcon icon={faSignOutAlt} />
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline-light"
+                    className="logout-button"
+                    href="/login"
+                  >
+                    Log In
+                  </Button>
+                )}
+                <Translate />
+              </Nav>
+            {/* </div> */}
           </Navbar.Collapse>
         </Container>
-
-        {currentUser ? (
-          <Button variant="primary" style={{ marginRight: '1rem', padding: '8px 15px', borderRadius: '20px' }} onClick={handleLogout}>
-            Logout
-          </Button>
-        ) : (
-          <Button variant="primary" style={{ marginRight: '1rem', padding: '8px 15px', borderRadius: '20px' }}>
-            <a href="/login" style={{ color: 'white', textDecoration: 'none' }}>Log In</a>
-          </Button>
-        )}
-        <Translate />
       </Navbar>
-    </div>
+    </>
   );
 }

@@ -1,24 +1,26 @@
 import React from 'react';
-import Button from 'react-bootstrap/Button';
-import Card from 'react-bootstrap/Card';
-import "../Styles/card.styles.css";
+import { Card, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import '../Styles/card.styles.css'
 
-export default function PalleteCard(props) {
+
+
+export default function PalleteCard({ title, desc, img, url }) {
   return (
-    <div className="card-container">
-      <Card style={{ width: '24rem', margin: '2rem', borderRadius: '15px', boxShadow: '0px 8px 15px rgba(0, 0, 0, 0.1)' }}>
-        <Card.Img variant="top" src={props.img} style={{ borderTopLeftRadius: '15px', borderTopRightRadius: '15px' }} />
-        <Card.Body style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <Card.Title style={{ fontWeight: 'bold', color: '#2C3E50' }}>{props.title}</Card.Title>
-          <Card.Text style={{ color: '#7F8C8D', marginBottom: '1.5rem' }}>
-            {props.desc}
+    <>
+      {/* <style>{cardStyle}</style> */}
+      <Card className="custom-card">
+        <Card.Img variant="top" src={img} className="custom-card-img" />
+        <Card.Body className="custom-card-body">
+          <Card.Title className="custom-card-title">{title}</Card.Title>
+          <Card.Text className="custom-card-text">
+            {desc}
           </Card.Text>
-          <Link to={props.url}>
-            <Button variant="primary" style={{ backgroundColor: '#2980B9', borderColor: '#2980B9', width: '100%' }}>Get Started</Button>
+          <Link to={url}>
+            <Button variant="primary" className="custom-card-button w-100">Get Started</Button>
           </Link>
         </Card.Body>
       </Card>
-    </div>
-  )
+    </>
+  );
 }
