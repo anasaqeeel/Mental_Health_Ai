@@ -8,9 +8,7 @@ import { useAuth } from '../../Login/Components/AuthContext';
 import Translate from '../../Translate';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
-import '../Styles/navbarStyle.css'
-
-
+import '../Styles/navbarStyle.css';
 
 export default function TopNav() {
   const { currentUser, logout } = useAuth();
@@ -29,42 +27,44 @@ export default function TopNav() {
     navigate('/landing/video-chat');
   };
 
+  const handleVisualizeClick = () => {
+    navigate('/visualize');
+  };
+
   return (
     <>
-      {/* <style>{navbarStyle}</style> */}
       <Navbar expand="lg" className="custom-navbar" sticky="top">
         <Container fluid>
           <Navbar.Brand href="/">Therapy Is Healing</Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav" >
-            {/* <div className="justify-content-around"> */}
-              <Nav className="mx-auto">
-                <Nav.Link href="/interview">Take An Interview</Nav.Link>
-                <Nav.Link href="/questionnaire">Seek Help</Nav.Link>
-                <Nav.Link onClick={handleVideoChatClick}>Start Video Chat</Nav.Link>
-              </Nav>
-              <Nav>
-                {currentUser ? (
-                  <Button
-                    variant="outline-light"
-                    className="logout-button"
-                    onClick={handleLogout}
-                    aria-label="Logout"
-                  >
-                    <FontAwesomeIcon icon={faSignOutAlt} />
-                  </Button>
-                ) : (
-                  <Button
-                    variant="outline-light"
-                    className="logout-button"
-                    href="/login"
-                  >
-                    Log In
-                  </Button>
-                )}
-                <Translate />
-              </Nav>
-            {/* </div> */}
+            <Nav className="mx-auto">
+              <Nav.Link href="/interview">Take An Interview</Nav.Link>
+              <Nav.Link href="/questionnaire">Seek Help</Nav.Link>
+              <Nav.Link onClick={handleVideoChatClick}>Start Video Chat</Nav.Link>
+              <Nav.Link onClick={handleVisualizeClick}>Visualize</Nav.Link> {/* New Button */}
+            </Nav>
+            <Nav>
+              {currentUser ? (
+                <Button
+                  variant="outline-light"
+                  className="logout-button"
+                  onClick={handleLogout}
+                  aria-label="Logout"
+                >
+                  <FontAwesomeIcon icon={faSignOutAlt} />
+                </Button>
+              ) : (
+                <Button
+                  variant="outline-light"
+                  className="logout-button"
+                  href="/login"
+                >
+                  Log In
+                </Button>
+              )}
+              <Translate />
+            </Nav>
           </Navbar.Collapse>
         </Container>
       </Navbar>

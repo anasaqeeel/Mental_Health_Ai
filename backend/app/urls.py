@@ -1,7 +1,12 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import UserProfileViewSet, ENNEAGRAMViewSet, VideoViewSet, MMPI2QuestionnaireViewSet, UploadVideoView, UserQuestionnaireCreateView, get_matched_professionals, BFTQuestionnaireCreateView,NPQViewSet,NPQViewSet, ADHDViewSet, BDIViewSet, GADViewSet,MDQViewSet,OCIRViewSet,IBTViewSet, QuestionnaireReportPDFView
-
+from .views import (
+    UserProfileViewSet, ENNEAGRAMViewSet, VideoViewSet,
+    MMPI2QuestionnaireViewSet, UploadVideoView, UserQuestionnaireCreateView,
+    get_matched_professionals, BFTQuestionnaireCreateView, NPQViewSet,
+    ADHDViewSet, BDIViewSet, GADViewSet, MDQViewSet, OCIRViewSet,
+    IBTViewSet, QuestionnaireReportPDFView, MMPI2QuestionnaireStatsView
+)
 router = DefaultRouter()
 # router.register(r'users', UserProfileViewSet)
 # router.register(r'videos', VideoViewSet)  # Uncomment this line if you want to enable VideoViewSet
@@ -48,7 +53,10 @@ urlpatterns = [
     path('api/ibt/', IBTViewSet.as_view({'get': 'list', 'post': 'create'}), name='ibt-list'),
     path('api/ibt/<int:pk>/', IBTViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='ibt-detail'),
 
+    #visualize 
+    path('api/mmpi2-questionnaire/stats/', MMPI2QuestionnaireStatsView.as_view(), name='mmpi2-questionnaire-stats'),
+
     #report
-   path('api/questionnaire/report/<str:user_id>/<str:questionnaire_type>/', QuestionnaireReportPDFView.as_view(), name='questionnaire-report'),
+    path('api/questionnaire/report/<str:user_id>/<str:questionnaire_type>/', QuestionnaireReportPDFView.as_view(), name='questionnaire-report'),
 
 ]

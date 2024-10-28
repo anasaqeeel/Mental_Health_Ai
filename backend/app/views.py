@@ -112,6 +112,39 @@ import logging
 # Configure logging
 logger = logging.getLogger(__name__)
 
+
+class MMPI2QuestionnaireStatsView(APIView):
+    """
+    API View to aggregate MMPI2 questionnaire data.
+    Returns counts of True and False responses for each question.
+    """
+    def get(self, request):
+        # List of MMPI2 questionnaire questions (model field names)
+        questions = [
+            "rarelyWorryAboutHealth",
+            "alwaysTellTruth",
+            "feelTiredMostOfTheTime",
+            "feelPunishedWithoutCause",
+            "botheredByUpsetStomach",
+            "getLotOfHeadaches",
+            "likeToArrangeFlowers",
+            "someoneHasItInForMe",
+            "oftenDisturbingThoughts",
+            "hearThingsOthersCantHear",
+            "amHappierThanMostPeople",
+            "amEasilyEmbarrassed",
+        ]
+        
+        data = {}
+        for q in questions:
+            true_count = MMPI2Questionnaire.objects.filter(**{q: True}).count()
+            false_count = MMPI2Questionnaire.objects.filter(**{q: False}).count()
+            data[q] = {"True": true_count, "False": false_count}
+            logger.debug(f"Question: {q}, True: {true_count}, False: {false_count}")
+        
+        logger.info("MMPI2 Questionnaire statistics aggregated successfully.")
+        return Response(data, status=status.HTTP_200_OK)
+
 class QuestionnaireReportPDFView(APIView):
     def get(self, request, user_id, questionnaire_type):
         date_today = datetime.now().strftime("%B %d, %Y")
