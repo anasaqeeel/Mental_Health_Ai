@@ -65,21 +65,22 @@ class ENNEAGRAM(models.Model):
     mannersAndGoodTaste = models.CharField(max_length=100)  # Manners and good taste are extremely important to me.
     seenAsOverlyDramatic = models.CharField(max_length=100)  # People have seen me as overly dramatic.
     importantToUnderstandFeelings = models.CharField(max_length=100)  # Believe it is important to understand my own and other people’s feelings.
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"Enneagram Responses for User: {self.user}"
 class BFTQuestionnaire(models.Model):
     user = models.CharField(max_length=100)
     talksALot = models.CharField(max_length=100)
-    noticesWeakPoints = models.CharField(max_length=100)# Scale from 1 to 5
-    doesThingsCarefully = models.CharField(max_length=100)# Scale from 1 to 5
-    isSadDepressed = models.CharField(max_length=100)# Scale from 1 to 5
-    isOriginal = models.CharField(max_length=100)# Scale from 1 to 5
-    keepsThoughtsToThemselves = models.CharField(max_length=100)# Scale from 1 to 5
-    isHelpfulNotSelfish = models.CharField(max_length=100)# Scale from 1 to 5
-    isCareless = models.CharField(max_length=100)# Scale from 1 to 5
-    isRelaxed = models.CharField(max_length=100)# Scale from 1 to 5
-    isCurious = models.CharField(max_length=100)# Scale from 1 to 5
+    noticesWeakPoints = models.CharField(max_length=100)
+    doesThingsCarefully = models.CharField(max_length=100)
+    isSadDepressed = models.CharField(max_length=100)
+    isOriginal = models.CharField(max_length=100)
+    keepsThoughtsToThemselves = models.CharField(max_length=100)
+    isHelpfulNotSelfish = models.CharField(max_length=100)
+    isCareless = models.CharField(max_length=100)
+    isRelaxed = models.CharField(max_length=100)
+    isCurious = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -114,7 +115,7 @@ class MMPI2Questionnaire(models.Model):
     hearThingsOthersCantHear = models.BooleanField(default=False)
     amHappierThanMostPeople = models.BooleanField(default=False)
     amEasilyEmbarrassed = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return self.user
@@ -129,6 +130,8 @@ class NPQ(models.Model):
     troubleControllingTemper = models.BooleanField(default=False)
     hesitateWhenMakingDecisions = models.BooleanField(default=False)
     relyOnOthersForDecisions = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+
 
     def __str__(self):
         return f"NPQ Responses for User: {self.user}"
@@ -162,6 +165,8 @@ class BDI(models.Model):
     handlingSelfCriticism = models.CharField(max_length=100)
     thoughtsOfSelfHarm = models.CharField(max_length=100)
     frequencyOfCrying = models.CharField(max_length=100)
+    created_at = models.DateTimeField(default=timezone.now)
+
 
     def __str__(self):
         return f"BDI Responses for User: {self.user}"
@@ -175,6 +180,8 @@ class GAD(models.Model):
     restlessness = models.CharField(max_length=100)
     irritability = models.CharField(max_length=100)
     fearOfSomethingAwful = models.CharField(max_length=100)
+    created_at = models.DateTimeField(default=timezone.now)
+
 
     def __str__(self):
         return f"GAD Responses for User: {self.user}"
@@ -200,6 +207,8 @@ class MDQ(models.Model):
     moreEnergyThanUsual = models.BooleanField(default=False)
     moreActiveThanUsual = models.BooleanField(default=False)
     moreSocialThanUsual = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+
 
     def __str__(self):
         return f"MDQ Responses for User: {self.user}"
@@ -215,6 +224,7 @@ class OCIR(models.Model):
     repeatedlyCheckItems = models.CharField(max_length=100)  # I repeatedly check doors, windows, drawers, etc.
     upsetIfOthersChangeArrangement = models.CharField(max_length=100)  # I get upset if others change the way I have arranged things.
     feelCompelledToRepeatNumbers = models.CharField(max_length=100)  # I feel I have to repeat certain numbers.
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"OCIR Responses for User: {self.user}"
@@ -230,6 +240,7 @@ class IBT(models.Model):
     image8 = models.CharField(max_length=100)  # Question related to image 8
     image9 = models.CharField(max_length=100)  # Question related to image 9
     image10 = models.CharField(max_length=100)  # Question related to image 10
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"IBT Responses for User: {self.user}"

@@ -1,5 +1,22 @@
 from rest_framework import viewsets
 
+
+from datetime import datetime
+from django.http import HttpResponse
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import Paragraph
+from reportlab.lib.units import inch
+from .models import (
+    UserProfile, ADHD, GAD, MDQ, BDI, NPQ,
+    BFTQuestionnaire, OCIR, MMPI2Questionnaire, ENNEAGRAM
+)
+
+
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from django.http import HttpResponse
@@ -10,6 +27,9 @@ from .models import (
 )
 from rest_framework import status
 from rest_framework.response import Response
+
+from reportlab.platypus import Paragraph
+from reportlab.lib.units import inch
 
 from .models import (
     UserProfile,
@@ -52,6 +72,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.views import APIView
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 from app.VideoAnalysis.speechToText import audio_to_text,video_to_audio
 from app.VideoAnalysis.emotionDetector import analyze_emotions, summarize_emotions
@@ -73,12 +94,705 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import UserProfile, ADHD, GAD, MDQ, BDI  # Ensure BDI is imported
 
+from datetime import datetime
+from django.http import HttpResponse
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from .models import (
+    UserProfile, ADHD, GAD, MDQ, BDI, NPQ,
+    BFTQuestionnaire, OCIR, MMPI2Questionnaire, ENNEAGRAM
+)
+
+
+import logging
+
+# Configure logging
+logger = logging.getLogger(__name__)
+
 class QuestionnaireReportPDFView(APIView):
     def get(self, request, user_id, questionnaire_type):
-        # Log the request
+        date_today = datetime.now().strftime("%B %d, %Y")
+        logger.info(f"Received request for report generation. User ID: {user_id}, Questionnaire Type: {questionnaire_type}")
+
+        # Fetch the user's profile by firebase_uid
+        try:
+            user_profile = UserProfile.objects.get(firebase_uid=user_id)
+            logger.info(f"Fetched UserProfile: {user_profile}")
+        except UserProfile.DoesNotExist:
+            logger.error(f"UserProfile not found for user_id: {user_id}")
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Mapping of questionnaire types to their respective model classes and filter logic
+        questionnaire_models = {
+            "ADHD": {"model": ADHD, "filter_key": "user", "filter_value": user_profile},
+            "GAD": {"model": GAD, "filter_key": "user", "filter_value": user_profile},
+            "MDQ": {"model": MDQ, "filter_key": "user", "filter_value": user_profile},
+            "BDI": {"model": BDI, "filter_key": "user", "filter_value": user_profile},
+            "NPQ": {"model": NPQ, "filter_key": "user", "filter_value": user_profile.firebase_uid},
+            "BFT": {"model": BFTQuestionnaire, "filter_key": "user", "filter_value": user_profile.firebase_uid},
+            "OCIR": {"model": OCIR, "filter_key": "user", "filter_value": user_profile},
+            "MMPI2": {"model": MMPI2Questionnaire, "filter_key": "user", "filter_value": user_profile},
+            "ENNEAGRAM": {"model": ENNEAGRAM, "filter_key": "user", "filter_value": user_profile}
+        }
+
+        # Validate the questionnaire type
+        model_info = questionnaire_models.get(questionnaire_type.upper())
+        if not model_info:
+            logger.error(f"Unsupported questionnaire type: {questionnaire_type}")
+            return Response({"error": "Unsupported questionnaire type"}, status=status.HTTP_400_BAD_REQUEST)
+
+        model_class = model_info["model"]
+        filter_kwargs = {model_info["filter_key"]: model_info["filter_value"]}
+
+        # Determine ordering field: use 'created_at' if exists, else 'id'
+        ordering_field = '-created_at' if hasattr(model_class, 'created_at') else '-id'
+
+        # Fetch the most recent questionnaire entry
+        try:
+            queryset = model_class.objects.filter(**filter_kwargs).order_by(ordering_field)
+            questionnaire = queryset.first()
+            if not questionnaire:
+                logger.warning(f"{questionnaire_type} Questionnaire not found for user: {user_profile.name}")
+                return Response({"error": f"{questionnaire_type} Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+            logger.info(f"Fetched {questionnaire_type} Questionnaire with id: {questionnaire.id}")
+        except Exception as e:
+            logger.exception(f"Error fetching {questionnaire_type} Questionnaire: {str(e)}")
+            return Response({"error": f"Error fetching {questionnaire_type} Questionnaire"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Create PDF response
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{questionnaire_type}_Report_{user_id}.pdf"'
+
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter,
+                                rightMargin=72, leftMargin=72,
+                                topMargin=72, bottomMargin=72)
+
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name='TitleStyle', fontName='Helvetica-Bold', fontSize=18, spaceAfter=10))
+        styles.add(ParagraphStyle(name='SubtitleStyle', fontName='Helvetica-Oblique', fontSize=12, spaceAfter=20))
+        styles.add(ParagraphStyle(name='DateStyle', fontName='Helvetica', fontSize=10, spaceAfter=5))
+        styles.add(ParagraphStyle(name='SectionTitle', fontName='Helvetica-Bold', fontSize=14, spaceAfter=10))
+        styles.add(ParagraphStyle(name='QuestionStyle', fontName='Helvetica-Bold', fontSize=12, spaceAfter=2))
+        styles.add(ParagraphStyle(name='AnswerStyle', fontName='Helvetica', fontSize=12, leftIndent=20, spaceAfter=10))
+
+        story = []
+
+        # Header
+        story.append(Paragraph("Mental Health Report", styles['TitleStyle']))
+        story.append(Paragraph("Therapy is Healing", styles['SubtitleStyle']))
+
+        # Date
+        story.append(Paragraph(f"Date: {date_today}", styles['DateStyle']))
+        story.append(Spacer(1, 12))
+
+        # Line Separator
+        story.append(HRFlowable(width="100%", thickness=1, lineCap='round', color='black'))
+        story.append(Spacer(1, 12))
+
+        # Section Title
+        story.append(Paragraph(f"{questionnaire_type.upper()} Questionnaire", styles['SectionTitle']))
+
+        # Helper function to add question and answer
+        def add_question_answer(question, answer):
+            story.append(Paragraph(question, styles['QuestionStyle']))
+            story.append(Paragraph(str(answer), styles['AnswerStyle']))
+            story.append(Spacer(1, 6))
+
+        # Add content based on questionnaire type
+        if questionnaire_type.upper() == "ADHD":
+            add_question_answer("Trouble Wrapping Up Final Details:", questionnaire.troubleWrappingUpFinalDetails)
+            add_question_answer("Difficulty Getting Organized:", questionnaire.difficultyGettingOrganized)
+            add_question_answer("Problems Remembering Appointments:", questionnaire.problemsRememberingAppointments)
+            add_question_answer("Avoid Delaying Thought-Intensive Tasks:", questionnaire.avoidDelayingThoughtIntensiveTasks)
+            add_question_answer("Fidget or Squirm When Sitting:", questionnaire.fidgetOrSquirmWhenSitting)
+            add_question_answer("Feel Overly Active or Compelled:", questionnaire.feelOverlyActiveCompelled)
+            add_question_answer("Make Careless Mistakes:", questionnaire.makeCarelessMistakes)
+            add_question_answer("Difficulty Keeping Attention:", questionnaire.difficultyKeepingAttention)
+            add_question_answer("Difficulty Concentrating on Direct Speech:", questionnaire.difficultyConcentratingOnDirectSpeech)
+            add_question_answer("Misplace or Difficulty Finding Things:", questionnaire.misplaceOrDifficultyFindingThings)
+
+        elif questionnaire_type.upper() == "GAD":
+            add_question_answer("Feeling Nervous:", questionnaire.feelingNervous)
+            add_question_answer("Inability to Control Worrying:", questionnaire.inabilityToControlWorrying)
+            add_question_answer("Excessive Worrying:", questionnaire.excessiveWorrying)
+            add_question_answer("Trouble Relaxing:", questionnaire.troubleRelaxing)
+            add_question_answer("Restlessness:", questionnaire.restlessness)
+            add_question_answer("Irritability:", questionnaire.irritability)
+            add_question_answer("Fear of Something Awful:", questionnaire.fearOfSomethingAwful)
+
+        elif questionnaire_type.upper() == "MDQ":
+            add_question_answer("Feel Dependent On Others:", questionnaire.feelDependentOnOthers)
+            add_question_answer("Avoid Independent Decision Making:", questionnaire.avoidIndependentDecisionMaking)
+            add_question_answer("Feel Weak Or Tired:", questionnaire.feelWeakOrTired)
+            add_question_answer("Difficulty Concentrating:", questionnaire.difficultyConcentrating)
+            add_question_answer("Feel Dissatisfied With Self:", questionnaire.feelDissatisfiedWithSelf)
+            add_question_answer("Consider Self A Failure:", questionnaire.considerSelfAFailure)
+            add_question_answer("Trouble Controlling Temper:", questionnaire.troubleControllingTemper)
+            add_question_answer("Hesitate When Making Decisions:", questionnaire.hesitateWhenMakingDecisions)
+            add_question_answer("Rely On Others For Decisions:", questionnaire.relyOnOthersForDecisions)
+            add_question_answer("Feel Hyper To The Point Of Concern:", questionnaire.feelHyperToThePointOfConcern)
+            add_question_answer("Irritability Leading To Conflict:", questionnaire.irritabilityLeadingToConflict)
+            add_question_answer("Increased Self Confidence:", questionnaire.increasedSelfConfidence)
+            add_question_answer("Less Sleep Than Usual:", questionnaire.lessSleepThanUsual)
+            add_question_answer("More Talkative Than Usual:", questionnaire.moreTalkativeThanUsual)
+            add_question_answer("Racing Thoughts:", questionnaire.racingThoughts)
+            add_question_answer("Easily Distracted:", questionnaire.easilyDistracted)
+            add_question_answer("More Energy Than Usual:", questionnaire.moreEnergyThanUsual)
+            add_question_answer("More Active Than Usual:", questionnaire.moreActiveThanUsual)
+            add_question_answer("More Social Than Usual:", questionnaire.moreSocialThanUsual)
+
+        elif questionnaire_type.upper() == "BDI":
+            add_question_answer("Feelings Of Sadness:", questionnaire.feelingsOfSadness)
+            add_question_answer("Thoughts About Future:", questionnaire.thoughtsAboutFuture)
+            add_question_answer("Definition Of Success:", questionnaire.definitionOfSuccess)
+            add_question_answer("Ability To Experience Pleasure:", questionnaire.abilityToExperiencePleasure)
+            add_question_answer("Negative Self Statements:", questionnaire.negativeSelfStatements)
+            add_question_answer("Feelings Of Punishment:", questionnaire.feelingsOfPunishment)
+            add_question_answer("Disappointments In Self:", questionnaire.disappointmentsInSelf)
+            add_question_answer("Handling Self Criticism:", questionnaire.handlingSelfCriticism)
+            add_question_answer("Thoughts Of Self Harm:", questionnaire.thoughtsOfSelfHarm)
+            add_question_answer("Frequency Of Crying:", questionnaire.frequencyOfCrying)
+
+        elif questionnaire_type.upper() == "NPQ":
+            add_question_answer("Feel Dependent On Others:", questionnaire.feelDependentOnOthers)
+            add_question_answer("Avoid Independent Decisions:", questionnaire.avoidIndependentDecisions)
+            add_question_answer("Feel Weak Or Tired:", questionnaire.feelWeakOrTired)
+            add_question_answer("Find It Difficult To Concentrate:", questionnaire.findItDifficultToConcentrate)
+            add_question_answer("Frequently Dissatisfied With Self:", questionnaire.frequentlyDissatisfiedWithSelf)
+            add_question_answer("Consider Self A Failure:", questionnaire.considerSelfAFailure)
+            add_question_answer("Trouble Controlling Temper:", questionnaire.troubleControllingTemper)
+            add_question_answer("Hesitate When Making Decisions:", questionnaire.hesitateWhenMakingDecisions)
+            add_question_answer("Rely On Others For Decisions:", questionnaire.relyOnOthersForDecisions)
+
+        elif questionnaire_type.upper() == "BFT":
+            add_question_answer("Talks A Lot:", questionnaire.talksALot)
+            add_question_answer("Notices Weak Points:", questionnaire.noticesWeakPoints)
+            add_question_answer("Does Things Carefully:", questionnaire.doesThingsCarefully)
+            add_question_answer("Is Sad/Depressed:", questionnaire.isSadDepressed)
+            add_question_answer("Is Original:", questionnaire.isOriginal)
+            add_question_answer("Keeps Thoughts to Themselves:", questionnaire.keepsThoughtsToThemselves)
+            add_question_answer("Is Helpful Not Selfish:", questionnaire.isHelpfulNotSelfish)
+            add_question_answer("Is Careless:", questionnaire.isCareless)
+            add_question_answer("Is Relaxed:", questionnaire.isRelaxed)
+            add_question_answer("Is Curious:", questionnaire.isCurious)
+
+        elif questionnaire_type.upper() == "OCIR":
+            add_question_answer("Saved Too Many Things:", questionnaire.savedTooManyThings)
+            add_question_answer("Check Things More Often:", questionnaire.checkThingsMoreOften)
+            add_question_answer("Upset If Not Arranged Properly:", questionnaire.upsetIfNotArrangedProperly)
+            add_question_answer("Compelled To Count:", questionnaire.compelledToCount)
+            add_question_answer("Difficult To Touch Touched Objects:", questionnaire.difficultToTouchTouchedObjects)
+            add_question_answer("Difficult To Control Thoughts:", questionnaire.difficultToControlThoughts)
+            add_question_answer("Collect Unnecessary Things:", questionnaire.collectUnnecessaryThings)
+            add_question_answer("Repeatedly Check Items:", questionnaire.repeatedlyCheckItems)
+            add_question_answer("Upset If Others Change Arrangement:", questionnaire.upsetIfOthersChangeArrangement)
+            add_question_answer("Feel Compelled To Repeat Numbers:", questionnaire.feelCompelledToRepeatNumbers)
+
+        elif questionnaire_type.upper() == "MMPI2":
+            add_question_answer("Rarely Worry About Health:", questionnaire.rarelyWorryAboutHealth)
+            add_question_answer("Always Tell The Truth:", questionnaire.alwaysTellTruth)
+            add_question_answer("Feel Tired Most Of The Time:", questionnaire.feelTiredMostOfTheTime)
+            add_question_answer("Feel Punished Without Cause:", questionnaire.feelPunishedWithoutCause)
+            add_question_answer("Bothered By Upset Stomach:", questionnaire.botheredByUpsetStomach)
+            add_question_answer("Get A Lot Of Headaches:", questionnaire.getLotOfHeadaches)
+            add_question_answer("Like To Arrange Flowers:", questionnaire.likeToArrangeFlowers)
+            add_question_answer("Someone Has It In For Me:", questionnaire.someoneHasItInForMe)
+            add_question_answer("Often Disturbing Thoughts:", questionnaire.oftenDisturbingThoughts)
+            add_question_answer("Hear Things Others Can't Hear:", questionnaire.hearThingsOthersCantHear)
+            add_question_answer("Am Happier Than Most People:", questionnaire.amHappierThanMostPeople)
+            add_question_answer("Am Easily Embarrassed:", questionnaire.amEasilyEmbarrassed)
+
+        elif questionnaire_type.upper() == "ENNEAGRAM":
+            add_question_answer("Creative Artistic View:", questionnaire.creativeArtisticView)
+            add_question_answer("Feel Different From Others:", questionnaire.feelDifferentFromOthers)
+            add_question_answer("Experience Melancholy:", questionnaire.experienceMelancholy)
+            add_question_answer("Overly Sensitive:", questionnaire.overlySensitive)
+            add_question_answer("Feel Something Is Missing:", questionnaire.feelSomethingIsMissing)
+            add_question_answer("Feel Envious Of Others:", questionnaire.feelEnviousOfOthers)
+            add_question_answer("Thrive In Creative Environments:", questionnaire.thriveInCreativeEnvironments)
+            add_question_answer("Become Withdrawn When Misunderstood:", questionnaire.canBecomeWithdrawnWhenMisunderstood)
+            add_question_answer("Romantic Longing:", questionnaire.romanticLonging)
+            add_question_answer("Caught In Fantasy World:", questionnaire.caughtInFantasyWorld)
+            add_question_answer("Enjoy Unique Elegant Things:", questionnaire.enjoyUniqueElegantThings)
+            add_question_answer("Moody When Stressed:", questionnaire.moodyWhenStressed)
+            add_question_answer("Reflective And Search For Meaning:", questionnaire.reflectiveAndSearchForMeaning)
+            add_question_answer("Strive To Be Unique:", questionnaire.striveToBeUnique)
+            add_question_answer("Manners And Good Taste:", questionnaire.mannersAndGoodTaste)
+            add_question_answer("Seen As Overly Dramatic:", questionnaire.seenAsOverlyDramatic)
+            add_question_answer("Important To Understand Feelings:", questionnaire.importantToUnderstandFeelings)
+
+        else:
+            logger.error(f"Unsupported questionnaire type: {questionnaire_type}")
+            return Response({"error": "Unsupported questionnaire type"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Build the PDF
+        try:
+            doc.build(story)
+        except Exception as e:
+            logger.exception(f"Error building PDF: {str(e)}")
+            return Response({"error": "Error generating PDF"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Move the buffer's position to the beginning
+        buffer.seek(0)
+
+        # Write the buffer to the response
+        response.write(buffer.getvalue())
+        buffer.close()
+
+        logger.info(f"PDF report generated successfully for user: {user_profile.name}, questionnaire type: {questionnaire_type}")
+
+        return response
+    
+    def get(self, request, user_id, questionnaire_type):
+        date_today = datetime.now().strftime("%B %d, %Y")
         print(f"Received request for report generation. User ID: {user_id}, Questionnaire Type: {questionnaire_type}")
 
-        # Fetch the user's profile by firebase_uid (not by the 'id')
+        # Fetch the user's profile by firebase_uid
+        try:
+            user_profile = UserProfile.objects.get(firebase_uid=user_id)
+        except UserProfile.DoesNotExist:
+            print(f"UserProfile not found for user_id: {user_id}")
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Mapping of questionnaire types to their respective model classes and filter logic
+        questionnaire_models = {
+            "ADHD": {"model": ADHD, "filter_key": "user", "filter_value": user_profile},
+            "GAD": {"model": GAD, "filter_key": "user", "filter_value": user_profile},
+            "MDQ": {"model": MDQ, "filter_key": "user", "filter_value": user_profile},
+            "BDI": {"model": BDI, "filter_key": "user", "filter_value": user_profile},
+            "NPQ": {"model": NPQ, "filter_key": "user", "filter_value": user_profile.firebase_uid},
+            "BFT": {"model": BFTQuestionnaire, "filter_key": "user", "filter_value": user_profile.firebase_uid},
+            "OCIR": {"model": OCIR, "filter_key": "user", "filter_value": user_profile},
+            "MMPI2": {"model": MMPI2Questionnaire, "filter_key": "user", "filter_value": user_profile},
+            "ENNEAGRAM": {"model": ENNEAGRAM, "filter_key": "user", "filter_value": user_profile}
+        }
+
+        # Validate the questionnaire type
+        model_info = questionnaire_models.get(questionnaire_type.upper())
+        if not model_info:
+            print(f"Unsupported questionnaire type: {questionnaire_type}")
+            return Response({"error": "Unsupported questionnaire type"}, status=status.HTTP_400_BAD_REQUEST)
+
+        model_class = model_info["model"]
+        filter_kwargs = {model_info["filter_key"]: model_info["filter_value"]}
+
+        # Fetch the most recent questionnaire entry by ordering descending by 'id'
+        try:
+            queryset = model_class.objects.filter(**filter_kwargs).order_by('-created_at').first()
+            print(f"Queryset for {questionnaire_type.upper()}: {[q.id for q in queryset]}")
+            questionnaire = queryset.first()
+            # questionnaire = model_class.objects.filter(**filter_kwargs).order_by('-id').first()
+            if not questionnaire:
+                print(f"{questionnaire_type} Questionnaire not found for user: {user_profile.name}")
+                return Response({"error": f"{questionnaire_type} Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+            print(f"Fetched {questionnaire_type} Questionnaire with id: {questionnaire.id}")
+        except Exception as e:
+            print(f"Error fetching {questionnaire_type} Questionnaire: {str(e)}")
+            return Response({"error": f"Error fetching {questionnaire_type} Questionnaire"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Create PDF response
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{questionnaire_type}_Report_{user_id}.pdf"'
+
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter,
+                                rightMargin=72, leftMargin=72,
+                                topMargin=72, bottomMargin=72)
+
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name='TitleStyle', fontName='Helvetica-Bold', fontSize=18, spaceAfter=10))
+        styles.add(ParagraphStyle(name='SubtitleStyle', fontName='Helvetica-Oblique', fontSize=12, spaceAfter=20))
+        styles.add(ParagraphStyle(name='DateStyle', fontName='Helvetica', fontSize=10, spaceAfter=5))
+        styles.add(ParagraphStyle(name='SectionTitle', fontName='Helvetica-Bold', fontSize=14, spaceAfter=10))
+        styles.add(ParagraphStyle(name='QuestionStyle', fontName='Helvetica-Bold', fontSize=12, spaceAfter=2))
+        styles.add(ParagraphStyle(name='AnswerStyle', fontName='Helvetica', fontSize=12, leftIndent=20, spaceAfter=10))
+
+        story = []
+
+        # Header
+        story.append(Paragraph("Mental Health Report", styles['TitleStyle']))
+        story.append(Paragraph("Therapy is Healing", styles['SubtitleStyle']))
+
+        # Date (Removed 'Created At')
+        story.append(Paragraph(f"Date: {date_today}", styles['DateStyle']))
+        story.append(Spacer(1, 12))
+
+        # Line Separator
+        story.append(HRFlowable(width="100%", thickness=1, lineCap='round', color='black'))
+        story.append(Spacer(1, 12))
+
+        # Section Title
+        story.append(Paragraph(f"{questionnaire_type.upper()} Questionnaire", styles['SectionTitle']))
+
+        # Helper function to add question and answer
+        def add_question_answer(question, answer):
+            story.append(Paragraph(question, styles['QuestionStyle']))
+            story.append(Paragraph(str(answer), styles['AnswerStyle']))
+            story.append(Spacer(1, 6))
+
+        # Add content based on questionnaire type
+        if questionnaire_type.upper() == "ADHD":
+            add_question_answer("Trouble Wrapping Up Final Details:", questionnaire.troubleWrappingUpFinalDetails)
+            add_question_answer("Difficulty Getting Organized:", questionnaire.difficultyGettingOrganized)
+            add_question_answer("Problems Remembering Appointments:", questionnaire.problemsRememberingAppointments)
+            add_question_answer("Avoid Delaying Thought-Intensive Tasks:", questionnaire.avoidDelayingThoughtIntensiveTasks)
+            add_question_answer("Fidget or Squirm When Sitting:", questionnaire.fidgetOrSquirmWhenSitting)
+            add_question_answer("Feel Overly Active or Compelled:", questionnaire.feelOverlyActiveCompelled)
+            add_question_answer("Make Careless Mistakes:", questionnaire.makeCarelessMistakes)
+            add_question_answer("Difficulty Keeping Attention:", questionnaire.difficultyKeepingAttention)
+            add_question_answer("Difficulty Concentrating on Direct Speech:", questionnaire.difficultyConcentratingOnDirectSpeech)
+            add_question_answer("Misplace or Difficulty Finding Things:", questionnaire.misplaceOrDifficultyFindingThings)
+
+        elif questionnaire_type.upper() == "GAD":
+            add_question_answer("Feeling Nervous:", questionnaire.feelingNervous)
+            add_question_answer("Inability to Control Worrying:", questionnaire.inabilityToControlWorrying)
+            add_question_answer("Excessive Worrying:", questionnaire.excessiveWorrying)
+            add_question_answer("Trouble Relaxing:", questionnaire.troubleRelaxing)
+            add_question_answer("Restlessness:", questionnaire.restlessness)
+            add_question_answer("Irritability:", questionnaire.irritability)
+            add_question_answer("Fear of Something Awful:", questionnaire.fearOfSomethingAwful)
+
+        elif questionnaire_type.upper() == "MDQ":
+            add_question_answer("Feel Dependent On Others:", questionnaire.feelDependentOnOthers)
+            add_question_answer("Avoid Independent Decision Making:", questionnaire.avoidIndependentDecisionMaking)
+            add_question_answer("Feel Weak Or Tired:", questionnaire.feelWeakOrTired)
+            add_question_answer("Difficulty Concentrating:", questionnaire.difficultyConcentrating)
+            add_question_answer("Feel Dissatisfied With Self:", questionnaire.feelDissatisfiedWithSelf)
+            add_question_answer("Consider Self A Failure:", questionnaire.considerSelfAFailure)
+            add_question_answer("Trouble Controlling Temper:", questionnaire.troubleControllingTemper)
+            add_question_answer("Hesitate When Making Decisions:", questionnaire.hesitateWhenMakingDecisions)
+            add_question_answer("Rely On Others For Decisions:", questionnaire.relyOnOthersForDecisions)
+            add_question_answer("Feel Hyper To The Point Of Concern:", questionnaire.feelHyperToThePointOfConcern)
+            add_question_answer("Irritability Leading To Conflict:", questionnaire.irritabilityLeadingToConflict)
+            add_question_answer("Increased Self Confidence:", questionnaire.increasedSelfConfidence)
+            add_question_answer("Less Sleep Than Usual:", questionnaire.lessSleepThanUsual)
+            add_question_answer("More Talkative Than Usual:", questionnaire.moreTalkativeThanUsual)
+            add_question_answer("Racing Thoughts:", questionnaire.racingThoughts)
+            add_question_answer("Easily Distracted:", questionnaire.easilyDistracted)
+            add_question_answer("More Energy Than Usual:", questionnaire.moreEnergyThanUsual)
+            add_question_answer("More Active Than Usual:", questionnaire.moreActiveThanUsual)
+            add_question_answer("More Social Than Usual:", questionnaire.moreSocialThanUsual)
+
+        elif questionnaire_type.upper() == "BDI":
+            add_question_answer("Feelings Of Sadness:", questionnaire.feelingsOfSadness)
+            add_question_answer("Thoughts About Future:", questionnaire.thoughtsAboutFuture)
+            add_question_answer("Definition Of Success:", questionnaire.definitionOfSuccess)
+            add_question_answer("Ability To Experience Pleasure:", questionnaire.abilityToExperiencePleasure)
+            add_question_answer("Negative Self Statements:", questionnaire.negativeSelfStatements)
+            add_question_answer("Feelings Of Punishment:", questionnaire.feelingsOfPunishment)
+            add_question_answer("Disappointments In Self:", questionnaire.disappointmentsInSelf)
+            add_question_answer("Handling Self Criticism:", questionnaire.handlingSelfCriticism)
+            add_question_answer("Thoughts Of Self Harm:", questionnaire.thoughtsOfSelfHarm)
+            add_question_answer("Frequency Of Crying:", questionnaire.frequencyOfCrying)
+
+        elif questionnaire_type.upper() == "NPQ":
+            add_question_answer("Feel Dependent On Others:", questionnaire.feelDependentOnOthers)
+            add_question_answer("Avoid Independent Decisions:", questionnaire.avoidIndependentDecisions)
+            add_question_answer("Feel Weak Or Tired:", questionnaire.feelWeakOrTired)
+            add_question_answer("Find It Difficult To Concentrate:", questionnaire.findItDifficultToConcentrate)
+            add_question_answer("Frequently Dissatisfied With Self:", questionnaire.frequentlyDissatisfiedWithSelf)
+            add_question_answer("Consider Self A Failure:", questionnaire.considerSelfAFailure)
+            add_question_answer("Trouble Controlling Temper:", questionnaire.troubleControllingTemper)
+            add_question_answer("Hesitate When Making Decisions:", questionnaire.hesitateWhenMakingDecisions)
+            add_question_answer("Rely On Others For Decisions:", questionnaire.relyOnOthersForDecisions)
+
+        elif questionnaire_type.upper() == "BFT":
+            add_question_answer("Talks A Lot:", questionnaire.talksALot)
+            add_question_answer("Notices Weak Points:", questionnaire.noticesWeakPoints)
+            add_question_answer("Does Things Carefully:", questionnaire.doesThingsCarefully)
+            add_question_answer("Is Sad/Depressed:", questionnaire.isSadDepressed)
+            add_question_answer("Is Original:", questionnaire.isOriginal)
+            add_question_answer("Keeps Thoughts to Themselves:", questionnaire.keepsThoughtsToThemselves)
+            add_question_answer("Is Helpful Not Selfish:", questionnaire.isHelpfulNotSelfish)
+            add_question_answer("Is Careless:", questionnaire.isCareless)
+            add_question_answer("Is Relaxed:", questionnaire.isRelaxed)
+            add_question_answer("Is Curious:", questionnaire.isCurious)
+
+        elif questionnaire_type.upper() == "OCIR":
+            add_question_answer("Saved Too Many Things:", questionnaire.savedTooManyThings)
+            add_question_answer("Check Things More Often:", questionnaire.checkThingsMoreOften)
+            add_question_answer("Upset If Not Arranged Properly:", questionnaire.upsetIfNotArrangedProperly)
+            add_question_answer("Compelled To Count:", questionnaire.compelledToCount)
+            add_question_answer("Difficult To Touch Touched Objects:", questionnaire.difficultToTouchTouchedObjects)
+            add_question_answer("Difficult To Control Thoughts:", questionnaire.difficultToControlThoughts)
+            add_question_answer("Collect Unnecessary Things:", questionnaire.collectUnnecessaryThings)
+            add_question_answer("Repeatedly Check Items:", questionnaire.repeatedlyCheckItems)
+            add_question_answer("Upset If Others Change Arrangement:", questionnaire.upsetIfOthersChangeArrangement)
+            add_question_answer("Feel Compelled To Repeat Numbers:", questionnaire.feelCompelledToRepeatNumbers)
+
+        elif questionnaire_type.upper() == "MMPI2":
+            add_question_answer("Rarely Worry About Health:", questionnaire.rarelyWorryAboutHealth)
+            add_question_answer("Always Tell The Truth:", questionnaire.alwaysTellTruth)
+            add_question_answer("Feel Tired Most Of The Time:", questionnaire.feelTiredMostOfTheTime)
+            add_question_answer("Feel Punished Without Cause:", questionnaire.feelPunishedWithoutCause)
+            add_question_answer("Bothered By Upset Stomach:", questionnaire.botheredByUpsetStomach)
+            add_question_answer("Get A Lot Of Headaches:", questionnaire.getLotOfHeadaches)
+            add_question_answer("Like To Arrange Flowers:", questionnaire.likeToArrangeFlowers)
+            add_question_answer("Someone Has It In For Me:", questionnaire.someoneHasItInForMe)
+            add_question_answer("Often Disturbing Thoughts:", questionnaire.oftenDisturbingThoughts)
+            add_question_answer("Hear Things Others Can't Hear:", questionnaire.hearThingsOthersCantHear)
+            add_question_answer("Am Happier Than Most People:", questionnaire.amHappierThanMostPeople)
+            add_question_answer("Am Easily Embarrassed:", questionnaire.amEasilyEmbarrassed)
+
+        elif questionnaire_type.upper() == "ENNEAGRAM":
+            add_question_answer("Creative Artistic View:", questionnaire.creativeArtisticView)
+            add_question_answer("Feel Different From Others:", questionnaire.feelDifferentFromOthers)
+            add_question_answer("Experience Melancholy:", questionnaire.experienceMelancholy)
+            add_question_answer("Overly Sensitive:", questionnaire.overlySensitive)
+            add_question_answer("Feel Something Is Missing:", questionnaire.feelSomethingIsMissing)
+            add_question_answer("Feel Envious Of Others:", questionnaire.feelEnviousOfOthers)
+            add_question_answer("Thrive In Creative Environments:", questionnaire.thriveInCreativeEnvironments)
+            add_question_answer("Become Withdrawn When Misunderstood:", questionnaire.canBecomeWithdrawnWhenMisunderstood)
+            add_question_answer("Romantic Longing:", questionnaire.romanticLonging)
+            add_question_answer("Caught In Fantasy World:", questionnaire.caughtInFantasyWorld)
+            add_question_answer("Enjoy Unique Elegant Things:", questionnaire.enjoyUniqueElegantThings)
+            add_question_answer("Moody When Stressed:", questionnaire.moodyWhenStressed)
+            add_question_answer("Reflective And Search For Meaning:", questionnaire.reflectiveAndSearchForMeaning)
+            add_question_answer("Strive To Be Unique:", questionnaire.striveToBeUnique)
+            add_question_answer("Manners And Good Taste:", questionnaire.mannersAndGoodTaste)
+            add_question_answer("Seen As Overly Dramatic:", questionnaire.seenAsOverlyDramatic)
+            add_question_answer("Important To Understand Feelings:", questionnaire.importantToUnderstandFeelings)
+
+        # Build the PDF
+        doc.build(story)
+
+        # Move the buffer's position to the beginning
+        buffer.seek(0)
+
+        # Write the buffer to the response
+        response.write(buffer.getvalue())
+        buffer.close()
+
+        print(f"PDF report generated successfully for user: {user_profile.name}, questionnaire type: {questionnaire_type}")
+
+        return response
+    
+    def get(self, request, user_id, questionnaire_type):
+        date_today = datetime.now().strftime("%B %d, %Y")
+        print(f"Received request for report generation. User ID: {user_id}, Questionnaire Type: {questionnaire_type}")
+
+        # Fetch the user's profile by firebase_uid
+        try:
+            user_profile = UserProfile.objects.get(firebase_uid=user_id)
+        except UserProfile.DoesNotExist:
+            print(f"UserProfile not found for user_id: {user_id}")
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Mapping of questionnaire types to their respective model classes
+        questionnaire_models = {
+            "ADHD": ADHD,
+            "GAD": GAD,
+            "MDQ": MDQ,
+            "BDI": BDI,
+            "NPQ": NPQ,
+            "BFT": BFTQuestionnaire,
+            "OCIR": OCIR,
+            "MMPI2": MMPI2Questionnaire,
+            "ENNEAGRAM": ENNEAGRAM
+        }
+
+        # Validate the questionnaire type
+        model_class = questionnaire_models.get(questionnaire_type.upper())
+        if not model_class:
+            print(f"Unsupported questionnaire type: {questionnaire_type}")
+            return Response({"error": "Unsupported questionnaire type"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Fetch the most recent questionnaire entry by ordering descending by 'id'
+        try:
+            questionnaire = model_class.objects.filter(user=user_profile).order_by('-id').first()
+            if not questionnaire:
+                print(f"{questionnaire_type} Questionnaire not found for user: {user_profile.name}")
+                return Response({"error": f"{questionnaire_type} Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(f"Error fetching {questionnaire_type} Questionnaire: {str(e)}")
+            return Response({"error": f"Error fetching {questionnaire_type} Questionnaire"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Create PDF response
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{questionnaire_type}_Report_{user_id}.pdf"'
+
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter,
+                                rightMargin=72, leftMargin=72,
+                                topMargin=72, bottomMargin=72)
+
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name='TitleStyle', fontName='Helvetica-Bold', fontSize=18, spaceAfter=10))
+        styles.add(ParagraphStyle(name='SubtitleStyle', fontName='Helvetica-Oblique', fontSize=12, spaceAfter=20))
+        styles.add(ParagraphStyle(name='DateStyle', fontName='Helvetica', fontSize=10, spaceAfter=5))
+        styles.add(ParagraphStyle(name='SectionTitle', fontName='Helvetica-Bold', fontSize=14, spaceAfter=10))
+        styles.add(ParagraphStyle(name='QuestionStyle', fontName='Helvetica-Bold', fontSize=12, spaceAfter=2))
+        styles.add(ParagraphStyle(name='AnswerStyle', fontName='Helvetica', fontSize=12, leftIndent=20, spaceAfter=10))
+
+        story = []
+
+        # Header
+        story.append(Paragraph("Mental Health Report", styles['TitleStyle']))
+        story.append(Paragraph("Therapy is Healing", styles['SubtitleStyle']))
+
+        # Date (Removed 'Created At')
+        story.append(Paragraph(f"Date: {date_today}", styles['DateStyle']))
+        story.append(Spacer(1, 12))
+
+        # Line Separator
+        story.append(HRFlowable(width="100%", thickness=1, lineCap='round', color='black'))
+        story.append(Spacer(1, 12))
+
+        # Section Title
+        story.append(Paragraph(f"{questionnaire_type} Questionnaire", styles['SectionTitle']))
+
+        # Helper function to add question and answer
+        def add_question_answer(question, answer):
+            story.append(Paragraph(question, styles['QuestionStyle']))
+            story.append(Paragraph(str(answer), styles['AnswerStyle']))
+            story.append(Spacer(1, 6))
+
+        # Add content based on questionnaire type
+        if questionnaire_type.upper() == "ADHD":
+            add_question_answer("Trouble Wrapping Up Final Details:", questionnaire.troubleWrappingUpFinalDetails)
+            add_question_answer("Difficulty Getting Organized:", questionnaire.difficultyGettingOrganized)
+            add_question_answer("Problems Remembering Appointments:", questionnaire.problemsRememberingAppointments)
+            add_question_answer("Avoid Delaying Thought-Intensive Tasks:", questionnaire.avoidDelayingThoughtIntensiveTasks)
+            add_question_answer("Fidget or Squirm When Sitting:", questionnaire.fidgetOrSquirmWhenSitting)
+            add_question_answer("Feel Overly Active or Compelled:", questionnaire.feelOverlyActiveCompelled)
+            add_question_answer("Make Careless Mistakes:", questionnaire.makeCarelessMistakes)
+            add_question_answer("Difficulty Keeping Attention:", questionnaire.difficultyKeepingAttention)
+            add_question_answer("Difficulty Concentrating on Direct Speech:", questionnaire.difficultyConcentratingOnDirectSpeech)
+            add_question_answer("Misplace or Difficulty Finding Things:", questionnaire.misplaceOrDifficultyFindingThings)
+
+        elif questionnaire_type.upper() == "GAD":
+            add_question_answer("Feeling Nervous:", questionnaire.feelingNervous)
+            add_question_answer("Inability to Control Worrying:", questionnaire.inabilityToControlWorrying)
+            add_question_answer("Excessive Worrying:", questionnaire.excessiveWorrying)
+            add_question_answer("Trouble Relaxing:", questionnaire.troubleRelaxing)
+            add_question_answer("Restlessness:", questionnaire.restlessness)
+            add_question_answer("Irritability:", questionnaire.irritability)
+            add_question_answer("Fear of Something Awful:", questionnaire.fearOfSomethingAwful)
+
+        elif questionnaire_type.upper() == "MDQ":
+            add_question_answer("Feel Dependent On Others:", questionnaire.feelDependentOnOthers)
+            add_question_answer("Avoid Independent Decision Making:", questionnaire.avoidIndependentDecisionMaking)
+            add_question_answer("Feel Weak Or Tired:", questionnaire.feelWeakOrTired)
+            add_question_answer("Difficulty Concentrating:", questionnaire.difficultyConcentrating)
+            add_question_answer("Feel Dissatisfied With Self:", questionnaire.feelDissatisfiedWithSelf)
+            add_question_answer("Consider Self A Failure:", questionnaire.considerSelfAFailure)
+            add_question_answer("Trouble Controlling Temper:", questionnaire.troubleControllingTemper)
+            add_question_answer("Hesitate When Making Decisions:", questionnaire.hesitateWhenMakingDecisions)
+            add_question_answer("Rely On Others For Decisions:", questionnaire.relyOnOthersForDecisions)
+            add_question_answer("Feel Hyper To The Point Of Concern:", questionnaire.feelHyperToThePointOfConcern)
+            add_question_answer("Irritability Leading To Conflict:", questionnaire.irritabilityLeadingToConflict)
+            add_question_answer("Increased Self Confidence:", questionnaire.increasedSelfConfidence)
+            add_question_answer("Less Sleep Than Usual:", questionnaire.lessSleepThanUsual)
+            add_question_answer("More Talkative Than Usual:", questionnaire.moreTalkativeThanUsual)
+            add_question_answer("Racing Thoughts:", questionnaire.racingThoughts)
+            add_question_answer("Easily Distracted:", questionnaire.easilyDistracted)
+            add_question_answer("More Energy Than Usual:", questionnaire.moreEnergyThanUsual)
+            add_question_answer("More Active Than Usual:", questionnaire.moreActiveThanUsual)
+            add_question_answer("More Social Than Usual:", questionnaire.moreSocialThanUsual)
+
+        elif questionnaire_type.upper() == "BDI":
+            add_question_answer("Feelings Of Sadness:", questionnaire.feelingsOfSadness)
+            add_question_answer("Thoughts About Future:", questionnaire.thoughtsAboutFuture)
+            add_question_answer("Definition Of Success:", questionnaire.definitionOfSuccess)
+            add_question_answer("Ability To Experience Pleasure:", questionnaire.abilityToExperiencePleasure)
+            add_question_answer("Negative Self Statements:", questionnaire.negativeSelfStatements)
+            add_question_answer("Feelings Of Punishment:", questionnaire.feelingsOfPunishment)
+            add_question_answer("Disappointments In Self:", questionnaire.disappointmentsInSelf)
+            add_question_answer("Handling Self Criticism:", questionnaire.handlingSelfCriticism)
+            add_question_answer("Thoughts Of Self Harm:", questionnaire.thoughtsOfSelfHarm)
+            add_question_answer("Frequency Of Crying:", questionnaire.frequencyOfCrying)
+
+        elif questionnaire_type.upper() == "NPQ":
+            add_question_answer("Feel Dependent On Others:", questionnaire.feelDependentOnOthers)
+            add_question_answer("Avoid Independent Decisions:", questionnaire.avoidIndependentDecisions)
+            add_question_answer("Feel Weak Or Tired:", questionnaire.feelWeakOrTired)
+            add_question_answer("Find It Difficult To Concentrate:", questionnaire.findItDifficultToConcentrate)
+            add_question_answer("Frequently Dissatisfied With Self:", questionnaire.frequentlyDissatisfiedWithSelf)
+            add_question_answer("Consider Self A Failure:", questionnaire.considerSelfAFailure)
+            add_question_answer("Trouble Controlling Temper:", questionnaire.troubleControllingTemper)
+            add_question_answer("Hesitate When Making Decisions:", questionnaire.hesitateWhenMakingDecisions)
+            add_question_answer("Rely On Others For Decisions:", questionnaire.relyOnOthersForDecisions)
+
+        elif questionnaire_type.upper() == "BFT":
+            add_question_answer("Talks A Lot:", questionnaire.talksALot)
+            add_question_answer("Notices Weak Points:", questionnaire.noticesWeakPoints)
+            add_question_answer("Does Things Carefully:", questionnaire.doesThingsCarefully)
+            add_question_answer("Is Sad/Depressed:", questionnaire.isSadDepressed)
+            add_question_answer("Is Original:", questionnaire.isOriginal)
+            add_question_answer("Keeps Thoughts to Themselves:", questionnaire.keepsThoughtsToThemselves)
+            add_question_answer("Is Helpful Not Selfish:", questionnaire.isHelpfulNotSelfish)
+            add_question_answer("Is Careless:", questionnaire.isCareless)
+            add_question_answer("Is Relaxed:", questionnaire.isRelaxed)
+            add_question_answer("Is Curious:", questionnaire.isCurious)
+
+        elif questionnaire_type.upper() == "OCIR":
+            add_question_answer("Saved Too Many Things:", questionnaire.savedTooManyThings)
+            add_question_answer("Check Things More Often:", questionnaire.checkThingsMoreOften)
+            add_question_answer("Upset If Not Arranged Properly:", questionnaire.upsetIfNotArrangedProperly)
+            add_question_answer("Compelled To Count:", questionnaire.compelledToCount)
+            add_question_answer("Difficult To Touch Touched Objects:", questionnaire.difficultToTouchTouchedObjects)
+            add_question_answer("Difficult To Control Thoughts:", questionnaire.difficultToControlThoughts)
+            add_question_answer("Collect Unnecessary Things:", questionnaire.collectUnnecessaryThings)
+            add_question_answer("Repeatedly Check Items:", questionnaire.repeatedlyCheckItems)
+            add_question_answer("Upset If Others Change Arrangement:", questionnaire.upsetIfOthersChangeArrangement)
+            add_question_answer("Feel Compelled To Repeat Numbers:", questionnaire.feelCompelledToRepeatNumbers)
+
+        elif questionnaire_type.upper() == "MMPI2":
+            add_question_answer("Rarely Worry About Health:", questionnaire.rarelyWorryAboutHealth)
+            add_question_answer("Always Tell The Truth:", questionnaire.alwaysTellTruth)
+            add_question_answer("Feel Tired Most Of The Time:", questionnaire.feelTiredMostOfTheTime)
+            add_question_answer("Feel Punished Without Cause:", questionnaire.feelPunishedWithoutCause)
+            add_question_answer("Bothered By Upset Stomach:", questionnaire.botheredByUpsetStomach)
+            add_question_answer("Get A Lot Of Headaches:", questionnaire.getLotOfHeadaches)
+            add_question_answer("Like To Arrange Flowers:", questionnaire.likeToArrangeFlowers)
+            add_question_answer("Someone Has It In For Me:", questionnaire.someoneHasItInForMe)
+            add_question_answer("Often Disturbing Thoughts:", questionnaire.oftenDisturbingThoughts)
+            add_question_answer("Hear Things Others Can't Hear:", questionnaire.hearThingsOthersCantHear)
+            add_question_answer("Am Happier Than Most People:", questionnaire.amHappierThanMostPeople)
+            add_question_answer("Am Easily Embarrassed:", questionnaire.amEasilyEmbarrassed)
+
+        elif questionnaire_type.upper() == "ENNEAGRAM":
+            add_question_answer("Creative Artistic View:", questionnaire.creativeArtisticView)
+            add_question_answer("Feel Different From Others:", questionnaire.feelDifferentFromOthers)
+            add_question_answer("Experience Melancholy:", questionnaire.experienceMelancholy)
+            add_question_answer("Overly Sensitive:", questionnaire.overlySensitive)
+            add_question_answer("Feel Something Is Missing:", questionnaire.feelSomethingIsMissing)
+            add_question_answer("Feel Envious Of Others:", questionnaire.feelEnviousOfOthers)
+            add_question_answer("Thrive In Creative Environments:", questionnaire.thriveInCreativeEnvironments)
+            add_question_answer("Become Withdrawn When Misunderstood:", questionnaire.canBecomeWithdrawnWhenMisunderstood)
+            add_question_answer("Romantic Longing:", questionnaire.romanticLonging)
+            add_question_answer("Caught In Fantasy World:", questionnaire.caughtInFantasyWorld)
+            add_question_answer("Enjoy Unique Elegant Things:", questionnaire.enjoyUniqueElegantThings)
+            add_question_answer("Moody When Stressed:", questionnaire.moodyWhenStressed)
+            add_question_answer("Reflective And Search For Meaning:", questionnaire.reflectiveAndSearchForMeaning)
+            add_question_answer("Strive To Be Unique:", questionnaire.striveToBeUnique)
+            add_question_answer("Manners And Good Taste:", questionnaire.mannersAndGoodTaste)
+            add_question_answer("Seen As Overly Dramatic:", questionnaire.seenAsOverlyDramatic)
+            add_question_answer("Important To Understand Feelings:", questionnaire.importantToUnderstandFeelings)
+
+        # Build the PDF
+        doc.build(story)
+
+        # Move the buffer's position to the beginning
+        buffer.seek(0)
+
+        # Write the buffer to the response
+        response.write(buffer.getvalue())
+        buffer.close()
+
+        print(f"PDF report generated successfully for user: {user_profile.name}, questionnaire type: {questionnaire_type}")
+
+        return response
+    
+    def get(self, request, user_id, questionnaire_type):
+        date_today = datetime.now().strftime("%B %d, %Y")
+        print(f"Received request for report generation. User ID: {user_id}, Questionnaire Type: {questionnaire_type}")
+
+        # Fetch the user's profile by firebase_uid
         try:
             user_profile = UserProfile.objects.get(firebase_uid=user_id)
         except UserProfile.DoesNotExist:
@@ -86,6 +800,449 @@ class QuestionnaireReportPDFView(APIView):
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
         # Fetch the corresponding questionnaire data based on the questionnaire_type
+        questionnaire = None
+        try:
+            if questionnaire_type == "ADHD":
+                questionnaire = ADHD.objects.filter(user=user_profile).first()
+            elif questionnaire_type == "GAD":
+                questionnaire = GAD.objects.filter(user=user_profile).first()
+            elif questionnaire_type == "MDQ":
+                questionnaire = MDQ.objects.filter(user=user_profile).first()
+            elif questionnaire_type == "BDI":
+                questionnaire = BDI.objects.filter(user=user_profile).first()
+            elif questionnaire_type == "NPQ":
+                questionnaire = NPQ.objects.filter(user=user_profile).first()
+            elif questionnaire_type == "BFT":
+                questionnaire = BFTQuestionnaire.objects.filter(user=user_profile).first()
+            elif questionnaire_type == "OCIR":
+                questionnaire = OCIR.objects.filter(user=user_profile).first()
+            elif questionnaire_type == "MMPI2":
+                questionnaire = MMPI2Questionnaire.objects.filter(user=user_profile).first()
+            elif questionnaire_type == "ENNEAGRAM":
+                questionnaire = ENNEAGRAM.objects.filter(user=user_profile).first()
+            else:
+                print(f"Unsupported questionnaire type: {questionnaire_type}")
+                return Response({"error": "Unsupported questionnaire type"}, status=status.HTTP_400_BAD_REQUEST)
+
+            if not questionnaire:
+                print(f"{questionnaire_type} Questionnaire not found for user: {user_profile.name}")
+                return Response({"error": f"{questionnaire_type} Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        except Exception as e:
+            print(f"Error fetching {questionnaire_type} Questionnaire: {str(e)}")
+            return Response({"error": f"Error fetching {questionnaire_type} Questionnaire"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Create PDF response
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{questionnaire_type}_Report_{user_id}.pdf"'
+
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter,
+                                rightMargin=72, leftMargin=72,
+                                topMargin=72, bottomMargin=72)
+
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name='TitleStyle', fontName='Helvetica-Bold', fontSize=18, spaceAfter=10))
+        styles.add(ParagraphStyle(name='SubtitleStyle', fontName='Helvetica-Oblique', fontSize=12, spaceAfter=20))
+        styles.add(ParagraphStyle(name='DateStyle', fontName='Helvetica', fontSize=10, spaceAfter=5))
+        styles.add(ParagraphStyle(name='SectionTitle', fontName='Helvetica-Bold', fontSize=14, spaceAfter=10))
+        styles.add(ParagraphStyle(name='QuestionStyle', fontName='Helvetica-Bold', fontSize=12, spaceAfter=2))
+        styles.add(ParagraphStyle(name='AnswerStyle', fontName='Helvetica', fontSize=12, leftIndent=20, spaceAfter=10))
+
+        story = []
+
+        # Header
+        story.append(Paragraph("Mental Health Report", styles['TitleStyle']))
+        story.append(Paragraph("Therapy is Healing", styles['SubtitleStyle']))
+
+        # Date (Removed 'Created At')
+        story.append(Paragraph(f"Date: {date_today}", styles['DateStyle']))
+        story.append(Spacer(1, 12))
+
+        # Line Separator
+        story.append(HRFlowable(width="100%", thickness=1, lineCap='round', color='black'))
+        story.append(Spacer(1, 12))
+
+        # Section Title
+        story.append(Paragraph(f"{questionnaire_type} Questionnaire", styles['SectionTitle']))
+
+        # Helper function to add question and answer
+        def add_question_answer(question, answer):
+            story.append(Paragraph(question, styles['QuestionStyle']))
+            story.append(Paragraph(str(answer), styles['AnswerStyle']))
+            story.append(Spacer(1, 6))
+
+        # Add content based on questionnaire type
+        if questionnaire_type == "ADHD":
+            add_question_answer("Trouble Wrapping Up Final Details:", questionnaire.troubleWrappingUpFinalDetails)
+            add_question_answer("Difficulty Getting Organized:", questionnaire.difficultyGettingOrganized)
+            add_question_answer("Problems Remembering Appointments:", questionnaire.problemsRememberingAppointments)
+            add_question_answer("Avoid Delaying Thought-Intensive Tasks:", questionnaire.avoidDelayingThoughtIntensiveTasks)
+            add_question_answer("Fidget or Squirm When Sitting:", questionnaire.fidgetOrSquirmWhenSitting)
+            add_question_answer("Feel Overly Active or Compelled:", questionnaire.feelOverlyActiveCompelled)
+            add_question_answer("Make Careless Mistakes:", questionnaire.makeCarelessMistakes)
+            add_question_answer("Difficulty Keeping Attention:", questionnaire.difficultyKeepingAttention)
+            add_question_answer("Difficulty Concentrating on Direct Speech:", questionnaire.difficultyConcentratingOnDirectSpeech)
+            add_question_answer("Misplace or Difficulty Finding Things:", questionnaire.misplaceOrDifficultyFindingThings)
+
+        elif questionnaire_type == "GAD":
+            add_question_answer("Feeling Nervous:", questionnaire.feelingNervous)
+            add_question_answer("Inability to Control Worrying:", questionnaire.inabilityToControlWorrying)
+            add_question_answer("Excessive Worrying:", questionnaire.excessiveWorrying)
+            add_question_answer("Trouble Relaxing:", questionnaire.troubleRelaxing)
+            add_question_answer("Restlessness:", questionnaire.restlessness)
+            add_question_answer("Irritability:", questionnaire.irritability)
+            add_question_answer("Fear of Something Awful:", questionnaire.fearOfSomethingAwful)
+
+        elif questionnaire_type == "MDQ":
+            add_question_answer("Feel Dependent On Others:", questionnaire.feelDependentOnOthers)
+            add_question_answer("Avoid Independent Decision Making:", questionnaire.avoidIndependentDecisionMaking)
+            add_question_answer("Feel Weak Or Tired:", questionnaire.feelWeakOrTired)
+            add_question_answer("Difficulty Concentrating:", questionnaire.difficultyConcentrating)
+            add_question_answer("Feel Dissatisfied With Self:", questionnaire.feelDissatisfiedWithSelf)
+            add_question_answer("Consider Self A Failure:", questionnaire.considerSelfAFailure)
+            add_question_answer("Trouble Controlling Temper:", questionnaire.troubleControllingTemper)
+            add_question_answer("Hesitate When Making Decisions:", questionnaire.hesitateWhenMakingDecisions)
+            add_question_answer("Rely On Others For Decisions:", questionnaire.relyOnOthersForDecisions)
+            add_question_answer("Feel Hyper To The Point Of Concern:", questionnaire.feelHyperToThePointOfConcern)
+            add_question_answer("Irritability Leading To Conflict:", questionnaire.irritabilityLeadingToConflict)
+            add_question_answer("Increased Self Confidence:", questionnaire.increasedSelfConfidence)
+            add_question_answer("Less Sleep Than Usual:", questionnaire.lessSleepThanUsual)
+            add_question_answer("More Talkative Than Usual:", questionnaire.moreTalkativeThanUsual)
+            add_question_answer("Racing Thoughts:", questionnaire.racingThoughts)
+            add_question_answer("Easily Distracted:", questionnaire.easilyDistracted)
+            add_question_answer("More Energy Than Usual:", questionnaire.moreEnergyThanUsual)
+            add_question_answer("More Active Than Usual:", questionnaire.moreActiveThanUsual)
+            add_question_answer("More Social Than Usual:", questionnaire.moreSocialThanUsual)
+
+        elif questionnaire_type == "BDI":
+            add_question_answer("Feelings Of Sadness:", questionnaire.feelingsOfSadness)
+            add_question_answer("Thoughts About Future:", questionnaire.thoughtsAboutFuture)
+            add_question_answer("Definition Of Success:", questionnaire.definitionOfSuccess)
+            add_question_answer("Ability To Experience Pleasure:", questionnaire.abilityToExperiencePleasure)
+            add_question_answer("Negative Self Statements:", questionnaire.negativeSelfStatements)
+            add_question_answer("Feelings Of Punishment:", questionnaire.feelingsOfPunishment)
+            add_question_answer("Disappointments In Self:", questionnaire.disappointmentsInSelf)
+            add_question_answer("Handling Self Criticism:", questionnaire.handlingSelfCriticism)
+            add_question_answer("Thoughts Of Self Harm:", questionnaire.thoughtsOfSelfHarm)
+            add_question_answer("Frequency Of Crying:", questionnaire.frequencyOfCrying)
+
+        elif questionnaire_type == "NPQ":
+            add_question_answer("Feel Dependent On Others:", questionnaire.feelDependentOnOthers)
+            add_question_answer("Avoid Independent Decisions:", questionnaire.avoidIndependentDecisions)
+            add_question_answer("Feel Weak Or Tired:", questionnaire.feelWeakOrTired)
+            add_question_answer("Find It Difficult To Concentrate:", questionnaire.findItDifficultToConcentrate)
+            add_question_answer("Frequently Dissatisfied With Self:", questionnaire.frequentlyDissatisfiedWithSelf)
+            add_question_answer("Consider Self A Failure:", questionnaire.considerSelfAFailure)
+            add_question_answer("Trouble Controlling Temper:", questionnaire.troubleControllingTemper)
+            add_question_answer("Hesitate When Making Decisions:", questionnaire.hesitateWhenMakingDecisions)
+            add_question_answer("Rely On Others For Decisions:", questionnaire.relyOnOthersForDecisions)
+
+        elif questionnaire_type == "BFT":
+            add_question_answer("Talks A Lot:", questionnaire.talksALot)
+            add_question_answer("Notices Weak Points:", questionnaire.noticesWeakPoints)
+            add_question_answer("Does Things Carefully:", questionnaire.doesThingsCarefully)
+            add_question_answer("Is Sad/Depressed:", questionnaire.isSadDepressed)
+            add_question_answer("Is Original:", questionnaire.isOriginal)
+            add_question_answer("Keeps Thoughts to Themselves:", questionnaire.keepsThoughtsToThemselves)
+            add_question_answer("Is Helpful Not Selfish:", questionnaire.isHelpfulNotSelfish)
+            add_question_answer("Is Careless:", questionnaire.isCareless)
+            add_question_answer("Is Relaxed:", questionnaire.isRelaxed)
+            add_question_answer("Is Curious:", questionnaire.isCurious)
+
+        elif questionnaire_type == "OCIR":
+            add_question_answer("Saved Too Many Things:", questionnaire.savedTooManyThings)
+            add_question_answer("Check Things More Often:", questionnaire.checkThingsMoreOften)
+            add_question_answer("Upset If Not Arranged Properly:", questionnaire.upsetIfNotArrangedProperly)
+            add_question_answer("Compelled To Count:", questionnaire.compelledToCount)
+            add_question_answer("Difficult To Touch Touched Objects:", questionnaire.difficultToTouchTouchedObjects)
+            add_question_answer("Difficult To Control Thoughts:", questionnaire.difficultToControlThoughts)
+            add_question_answer("Collect Unnecessary Things:", questionnaire.collectUnnecessaryThings)
+            add_question_answer("Repeatedly Check Items:", questionnaire.repeatedlyCheckItems)
+            add_question_answer("Upset If Others Change Arrangement:", questionnaire.upsetIfOthersChangeArrangement)
+            add_question_answer("Feel Compelled To Repeat Numbers:", questionnaire.feelCompelledToRepeatNumbers)
+
+        elif questionnaire_type == "MMPI2":
+            add_question_answer("Rarely Worry About Health:", questionnaire.rarelyWorryAboutHealth)
+            add_question_answer("Always Tell The Truth:", questionnaire.alwaysTellTruth)
+            add_question_answer("Feel Tired Most Of The Time:", questionnaire.feelTiredMostOfTheTime)
+            add_question_answer("Feel Punished Without Cause:", questionnaire.feelPunishedWithoutCause)
+            add_question_answer("Bothered By Upset Stomach:", questionnaire.botheredByUpsetStomach)
+            add_question_answer("Get A Lot Of Headaches:", questionnaire.getLotOfHeadaches)
+            add_question_answer("Like To Arrange Flowers:", questionnaire.likeToArrangeFlowers)
+            add_question_answer("Someone Has It In For Me:", questionnaire.someoneHasItInForMe)
+            add_question_answer("Often Disturbing Thoughts:", questionnaire.oftenDisturbingThoughts)
+            add_question_answer("Hear Things Others Can't Hear:", questionnaire.hearThingsOthersCantHear)
+            add_question_answer("Am Happier Than Most People:", questionnaire.amHappierThanMostPeople)
+            add_question_answer("Am Easily Embarrassed:", questionnaire.amEasilyEmbarrassed)
+
+        elif questionnaire_type == "ENNEAGRAM":
+            add_question_answer("Creative Artistic View:", questionnaire.creativeArtisticView)
+            add_question_answer("Feel Different From Others:", questionnaire.feelDifferentFromOthers)
+            add_question_answer("Experience Melancholy:", questionnaire.experienceMelancholy)
+            add_question_answer("Overly Sensitive:", questionnaire.overlySensitive)
+            add_question_answer("Feel Something Is Missing:", questionnaire.feelSomethingIsMissing)
+            add_question_answer("Feel Envious Of Others:", questionnaire.feelEnviousOfOthers)
+            add_question_answer("Thrive In Creative Environments:", questionnaire.thriveInCreativeEnvironments)
+            add_question_answer("Become Withdrawn When Misunderstood:", questionnaire.canBecomeWithdrawnWhenMisunderstood)
+            add_question_answer("Romantic Longing:", questionnaire.romanticLonging)
+            add_question_answer("Caught In Fantasy World:", questionnaire.caughtInFantasyWorld)
+            add_question_answer("Enjoy Unique Elegant Things:", questionnaire.enjoyUniqueElegantThings)
+            add_question_answer("Moody When Stressed:", questionnaire.moodyWhenStressed)
+            add_question_answer("Reflective And Search For Meaning:", questionnaire.reflectiveAndSearchForMeaning)
+            add_question_answer("Strive To Be Unique:", questionnaire.striveToBeUnique)
+            add_question_answer("Manners And Good Taste:", questionnaire.mannersAndGoodTaste)
+            add_question_answer("Seen As Overly Dramatic:", questionnaire.seenAsOverlyDramatic)
+            add_question_answer("Important To Understand Feelings:", questionnaire.importantToUnderstandFeelings)
+
+        # Build the PDF
+        doc.build(story)
+
+        # Move the buffer's position to the beginning
+        buffer.seek(0)
+
+        # Write the buffer to the response
+        response.write(buffer.getvalue())
+        buffer.close()
+
+        print(f"PDF report generated successfully for user: {user_profile.name}, questionnaire type: {questionnaire_type}")
+
+        return response
+    
+    def get(self, request, user_id, questionnaire_type):
+        date_today = datetime.now().strftime("%B %d, %Y")
+        print(f"Received request for report generation. User ID: {user_id}, Questionnaire Type: {questionnaire_type}")
+
+        # Fetch the user's profile by firebase_uid
+        try:
+            user_profile = UserProfile.objects.get(firebase_uid=user_id)
+        except UserProfile.DoesNotExist:
+            print(f"UserProfile not found for user_id: {user_id}")
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Fetch the corresponding questionnaire data based on the questionnaire_type
+        questionnaire = None
+        try:
+            if questionnaire_type == "ADHD":
+                questionnaire = ADHD.objects.filter(user=user_profile).first()
+            elif questionnaire_type == "GAD":
+                questionnaire = GAD.objects.filter(user=user_profile).first()
+            elif questionnaire_type == "MDQ":
+                questionnaire = MDQ.objects.filter(user=user_profile).first()
+            elif questionnaire_type == "BDI":
+                questionnaire = BDI.objects.filter(user=user_profile).first()
+            elif questionnaire_type == "NPQ":
+                questionnaire = NPQ.objects.filter(user=user_profile).first()
+            elif questionnaire_type == "BFT":
+                questionnaire = BFTQuestionnaire.objects.filter(user=user_profile).first()
+            elif questionnaire_type == "OCIR":
+                questionnaire = OCIR.objects.filter(user=user_profile).first()
+            elif questionnaire_type == "MMPI2":
+                questionnaire = MMPI2Questionnaire.objects.filter(user=user_profile).first()
+            elif questionnaire_type == "ENNEAGRAM":
+                questionnaire = ENNEAGRAM.objects.filter(user=user_profile).first()
+            else:
+                print(f"Unsupported questionnaire type: {questionnaire_type}")
+                return Response({"error": "Unsupported questionnaire type"}, status=status.HTTP_400_BAD_REQUEST)
+
+            if not questionnaire:
+                print(f"{questionnaire_type} Questionnaire not found for user: {user_profile.name}")
+                return Response({"error": f"{questionnaire_type} Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        except Exception as e:
+            print(f"Error fetching {questionnaire_type} Questionnaire: {str(e)}")
+            return Response({"error": f"Error fetching {questionnaire_type} Questionnaire"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Create PDF response
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{questionnaire_type}_Report_{user_id}.pdf"'
+
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter,
+                                rightMargin=72, leftMargin=72,
+                                topMargin=72, bottomMargin=72)
+
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name='TitleStyle', fontName='Helvetica-Bold', fontSize=18, spaceAfter=10))
+        styles.add(ParagraphStyle(name='SubtitleStyle', fontName='Helvetica-Oblique', fontSize=12, spaceAfter=20))
+        styles.add(ParagraphStyle(name='DateStyle', fontName='Helvetica', fontSize=10, spaceAfter=5))
+        styles.add(ParagraphStyle(name='SectionTitle', fontName='Helvetica-Bold', fontSize=14, spaceAfter=10))
+        styles.add(ParagraphStyle(name='QuestionStyle', fontName='Helvetica-Bold', fontSize=12, spaceAfter=2))
+        styles.add(ParagraphStyle(name='AnswerStyle', fontName='Helvetica', fontSize=12, leftIndent=20, spaceAfter=10))
+
+        story = []
+
+        # Header
+        story.append(Paragraph("Mental Health Report", styles['TitleStyle']))
+        story.append(Paragraph("Therapy is Healing", styles['SubtitleStyle']))
+
+        # Date and Created At (if available)
+        story.append(Paragraph(f"Date: {date_today}", styles['DateStyle']))
+        # if hasattr(questionnaire, 'created_at') and questionnaire.created_at:
+        #     story.append(Paragraph(f"Created At: {questionnaire.created_at.strftime('%B %d, %Y')}", styles['DateStyle']))
+        # else:
+        #     story.append(Paragraph("Created At: N/A", styles['DateStyle']))
+        story.append(Spacer(1, 12))
+
+        # Line Separator
+        story.append(HRFlowable(width="100%", thickness=1, lineCap='round', color='black'))
+        story.append(Spacer(1, 12))
+
+        # Section Title
+        story.append(Paragraph(f"{questionnaire_type} Questionnaire", styles['SectionTitle']))
+
+        # Helper function to add question and answer
+        def add_question_answer(question, answer):
+            story.append(Paragraph(question, styles['QuestionStyle']))
+            story.append(Paragraph(str(answer), styles['AnswerStyle']))
+            story.append(Spacer(1, 6))
+
+        # Add content based on questionnaire type
+        if questionnaire_type == "ADHD":
+            add_question_answer("Trouble Wrapping Up Final Details:", questionnaire.troubleWrappingUpFinalDetails)
+            add_question_answer("Difficulty Getting Organized:", questionnaire.difficultyGettingOrganized)
+            add_question_answer("Problems Remembering Appointments:", questionnaire.problemsRememberingAppointments)
+            add_question_answer("Avoid Delaying Thought-Intensive Tasks:", questionnaire.avoidDelayingThoughtIntensiveTasks)
+            add_question_answer("Fidget or Squirm When Sitting:", questionnaire.fidgetOrSquirmWhenSitting)
+            add_question_answer("Feel Overly Active or Compelled:", questionnaire.feelOverlyActiveCompelled)
+            add_question_answer("Make Careless Mistakes:", questionnaire.makeCarelessMistakes)
+            add_question_answer("Difficulty Keeping Attention:", questionnaire.difficultyKeepingAttention)
+            add_question_answer("Difficulty Concentrating on Direct Speech:", questionnaire.difficultyConcentratingOnDirectSpeech)
+            add_question_answer("Misplace or Difficulty Finding Things:", questionnaire.misplaceOrDifficultyFindingThings)
+
+        elif questionnaire_type == "GAD":
+            add_question_answer("Feeling Nervous:", questionnaire.feelingNervous)
+            add_question_answer("Inability to Control Worrying:", questionnaire.inabilityToControlWorrying)
+            add_question_answer("Excessive Worrying:", questionnaire.excessiveWorrying)
+            add_question_answer("Trouble Relaxing:", questionnaire.troubleRelaxing)
+            add_question_answer("Restlessness:", questionnaire.restlessness)
+            add_question_answer("Irritability:", questionnaire.irritability)
+            add_question_answer("Fear of Something Awful:", questionnaire.fearOfSomethingAwful)
+
+        elif questionnaire_type == "MDQ":
+            add_question_answer("Feel Dependent On Others:", questionnaire.feelDependentOnOthers)
+            add_question_answer("Avoid Independent Decision Making:", questionnaire.avoidIndependentDecisionMaking)
+            add_question_answer("Feel Weak Or Tired:", questionnaire.feelWeakOrTired)
+            add_question_answer("Difficulty Concentrating:", questionnaire.difficultyConcentrating)
+            add_question_answer("Feel Dissatisfied With Self:", questionnaire.feelDissatisfiedWithSelf)
+            add_question_answer("Consider Self A Failure:", questionnaire.considerSelfAFailure)
+            add_question_answer("Trouble Controlling Temper:", questionnaire.troubleControllingTemper)
+            add_question_answer("Hesitate When Making Decisions:", questionnaire.hesitateWhenMakingDecisions)
+            add_question_answer("Rely On Others For Decisions:", questionnaire.relyOnOthersForDecisions)
+            add_question_answer("Feel Hyper To The Point Of Concern:", questionnaire.feelHyperToThePointOfConcern)
+            add_question_answer("Irritability Leading To Conflict:", questionnaire.irritabilityLeadingToConflict)
+            add_question_answer("Increased Self Confidence:", questionnaire.increasedSelfConfidence)
+            add_question_answer("Less Sleep Than Usual:", questionnaire.lessSleepThanUsual)
+            add_question_answer("More Talkative Than Usual:", questionnaire.moreTalkativeThanUsual)
+            add_question_answer("Racing Thoughts:", questionnaire.racingThoughts)
+            add_question_answer("Easily Distracted:", questionnaire.easilyDistracted)
+            add_question_answer("More Energy Than Usual:", questionnaire.moreEnergyThanUsual)
+            add_question_answer("More Active Than Usual:", questionnaire.moreActiveThanUsual)
+            add_question_answer("More Social Than Usual:", questionnaire.moreSocialThanUsual)
+
+        elif questionnaire_type == "BDI":
+            add_question_answer("Feelings Of Sadness:", questionnaire.feelingsOfSadness)
+            add_question_answer("Thoughts About Future:", questionnaire.thoughtsAboutFuture)
+            add_question_answer("Definition Of Success:", questionnaire.definitionOfSuccess)
+            add_question_answer("Ability To Experience Pleasure:", questionnaire.abilityToExperiencePleasure)
+            add_question_answer("Negative Self Statements:", questionnaire.negativeSelfStatements)
+            add_question_answer("Feelings Of Punishment:", questionnaire.feelingsOfPunishment)
+            add_question_answer("Disappointments In Self:", questionnaire.disappointmentsInSelf)
+            add_question_answer("Handling Self Criticism:", questionnaire.handlingSelfCriticism)
+            add_question_answer("Thoughts Of Self Harm:", questionnaire.thoughtsOfSelfHarm)
+            add_question_answer("Frequency Of Crying:", questionnaire.frequencyOfCrying)
+
+        elif questionnaire_type == "NPQ":
+            add_question_answer("Feel Dependent On Others:", questionnaire.feelDependentOnOthers)
+            add_question_answer("Avoid Independent Decisions:", questionnaire.avoidIndependentDecisions)
+            add_question_answer("Feel Weak Or Tired:", questionnaire.feelWeakOrTired)
+            add_question_answer("Find It Difficult To Concentrate:", questionnaire.findItDifficultToConcentrate)
+            add_question_answer("Frequently Dissatisfied With Self:", questionnaire.frequentlyDissatisfiedWithSelf)
+            add_question_answer("Consider Self A Failure:", questionnaire.considerSelfAFailure)
+            add_question_answer("Trouble Controlling Temper:", questionnaire.troubleControllingTemper)
+            add_question_answer("Hesitate When Making Decisions:", questionnaire.hesitateWhenMakingDecisions)
+            add_question_answer("Rely On Others For Decisions:", questionnaire.relyOnOthersForDecisions)
+
+        elif questionnaire_type == "BFT":
+            add_question_answer("Talks A Lot:", questionnaire.talksALot)
+            add_question_answer("Notices Weak Points:", questionnaire.noticesWeakPoints)
+            add_question_answer("Does Things Carefully:", questionnaire.doesThingsCarefully)
+            add_question_answer("Is Sad/Depressed:", questionnaire.isSadDepressed)
+            add_question_answer("Is Original:", questionnaire.isOriginal)
+            add_question_answer("Keeps Thoughts to Themselves:", questionnaire.keepsThoughtsToThemselves)
+            add_question_answer("Is Helpful Not Selfish:", questionnaire.isHelpfulNotSelfish)
+            add_question_answer("Is Careless:", questionnaire.isCareless)
+            add_question_answer("Is Relaxed:", questionnaire.isRelaxed)
+            add_question_answer("Is Curious:", questionnaire.isCurious)
+
+        elif questionnaire_type == "OCIR":
+            add_question_answer("Saved Too Many Things:", questionnaire.savedTooManyThings)
+            add_question_answer("Check Things More Often:", questionnaire.checkThingsMoreOften)
+            add_question_answer("Upset If Not Arranged Properly:", questionnaire.upsetIfNotArrangedProperly)
+            add_question_answer("Compelled To Count:", questionnaire.compelledToCount)
+            add_question_answer("Difficult To Touch Touched Objects:", questionnaire.difficultToTouchTouchedObjects)
+            add_question_answer("Difficult To Control Thoughts:", questionnaire.difficultToControlThoughts)
+            add_question_answer("Collect Unnecessary Things:", questionnaire.collectUnnecessaryThings)
+            add_question_answer("Repeatedly Check Items:", questionnaire.repeatedlyCheckItems)
+            add_question_answer("Upset If Others Change Arrangement:", questionnaire.upsetIfOthersChangeArrangement)
+            add_question_answer("Feel Compelled To Repeat Numbers:", questionnaire.feelCompelledToRepeatNumbers)
+
+        elif questionnaire_type == "MMPI2":
+            add_question_answer("Rarely Worry About Health:", questionnaire.rarelyWorryAboutHealth)
+            add_question_answer("Always Tell The Truth:", questionnaire.alwaysTellTruth)
+            add_question_answer("Feel Tired Most Of The Time:", questionnaire.feelTiredMostOfTheTime)
+            add_question_answer("Feel Punished Without Cause:", questionnaire.feelPunishedWithoutCause)
+            add_question_answer("Bothered By Upset Stomach:", questionnaire.botheredByUpsetStomach)
+            add_question_answer("Get A Lot Of Headaches:", questionnaire.getLotOfHeadaches)
+            add_question_answer("Like To Arrange Flowers:", questionnaire.likeToArrangeFlowers)
+            add_question_answer("Someone Has It In For Me:", questionnaire.someoneHasItInForMe)
+            add_question_answer("Often Disturbing Thoughts:", questionnaire.oftenDisturbingThoughts)
+            add_question_answer("Hear Things Others Can't Hear:", questionnaire.hearThingsOthersCantHear)
+            add_question_answer("Am Happier Than Most People:", questionnaire.amHappierThanMostPeople)
+            add_question_answer("Am Easily Embarrassed:", questionnaire.amEasilyEmbarrassed)
+
+        elif questionnaire_type == "ENNEAGRAM":
+            add_question_answer("Creative Artistic View:", questionnaire.creativeArtisticView)
+            add_question_answer("Feel Different From Others:", questionnaire.feelDifferentFromOthers)
+            add_question_answer("Experience Melancholy:", questionnaire.experienceMelancholy)
+            add_question_answer("Overly Sensitive:", questionnaire.overlySensitive)
+            add_question_answer("Feel Something Is Missing:", questionnaire.feelSomethingIsMissing)
+            add_question_answer("Feel Envious Of Others:", questionnaire.feelEnviousOfOthers)
+            add_question_answer("Thrive In Creative Environments:", questionnaire.thriveInCreativeEnvironments)
+            add_question_answer("Become Withdrawn When Misunderstood:", questionnaire.canBecomeWithdrawnWhenMisunderstood)
+            add_question_answer("Romantic Longing:", questionnaire.romanticLonging)
+            add_question_answer("Caught In Fantasy World:", questionnaire.caughtInFantasyWorld)
+            add_question_answer("Enjoy Unique Elegant Things:", questionnaire.enjoyUniqueElegantThings)
+            add_question_answer("Moody When Stressed:", questionnaire.moodyWhenStressed)
+            add_question_answer("Reflective And Search For Meaning:", questionnaire.reflectiveAndSearchForMeaning)
+            add_question_answer("Strive To Be Unique:", questionnaire.striveToBeUnique)
+            add_question_answer("Manners And Good Taste:", questionnaire.mannersAndGoodTaste)
+            add_question_answer("Seen As Overly Dramatic:", questionnaire.seenAsOverlyDramatic)
+            add_question_answer("Important To Understand Feelings:", questionnaire.importantToUnderstandFeelings)
+
+        # Build the PDF
+        doc.build(story)
+
+        # Move the buffer's position to the beginning
+        buffer.seek(0)
+
+        # Write the buffer to the response
+        response.write(buffer.getvalue())
+        buffer.close()
+
+        print(f"PDF report generated successfully for user: {user_profile.name}, questionnaire type: {questionnaire_type}")
+
+        return response
+    def get(self, request, user_id, questionnaire_type):
+        date_today = datetime.now().strftime("%B %d, %Y")
+        print(f"Received request for report generation. User ID: {user_id}, Questionnaire Type: {questionnaire_type}")
+
+        try:
+            user_profile = UserProfile.objects.get(firebase_uid=user_id)
+        except UserProfile.DoesNotExist:
+            print(f"UserProfile not found for user_id: {user_id}")
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
         questionnaire = None
         if questionnaire_type == "ADHD":
             try:
@@ -96,7 +1253,7 @@ class QuestionnaireReportPDFView(APIView):
             except ADHD.DoesNotExist:
                 print(f"ADHD Questionnaire not found for user: {user_profile.name}")
                 return Response({"error": "ADHD Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
-        
+
         elif questionnaire_type == "GAD":
             try:
                 questionnaire = GAD.objects.filter(user=user_profile).first()
@@ -126,7 +1283,8 @@ class QuestionnaireReportPDFView(APIView):
             except BDI.DoesNotExist:
                 print(f"BDI Questionnaire not found for user: {user_profile.name}")
                 return Response({"error": "BDI Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
-        if questionnaire_type == "NPQ":
+
+        elif questionnaire_type == "NPQ":
             try:
                 questionnaire = NPQ.objects.filter(user=user_profile.firebase_uid).first()
                 if not questionnaire:
@@ -135,15 +1293,19 @@ class QuestionnaireReportPDFView(APIView):
             except NPQ.DoesNotExist:
                 print(f"NPQ Questionnaire not found for user: {user_profile.name}")
                 return Response({"error": "NPQ Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+
         elif questionnaire_type == "BFT":
             try:
                 questionnaire = BFTQuestionnaire.objects.filter(user=user_profile.firebase_uid).first()
                 if not questionnaire:
                     print(f"BFT Questionnaire not found for user: {user_profile.name}")
                     return Response({"error": "BFT Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+                else:
+                    print(f"BFT Questionnaire data >>: {questionnaire}")
             except BFTQuestionnaire.DoesNotExist:
                 print(f"BFT Questionnaire not found for user: {user_profile.name}")
                 return Response({"error": "BFT Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+
         elif questionnaire_type == "OCIR":
             try:
                 questionnaire = OCIR.objects.filter(user=user_profile).first()
@@ -153,160 +1315,221 @@ class QuestionnaireReportPDFView(APIView):
             except OCIR.DoesNotExist:
                 print(f"OCIR Questionnaire not found for user: {user_profile.name}")
                 return Response({"error": "OCIR Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
-        elif questionnaire_type == "MMPI2Questionnaire":
+
+        elif questionnaire_type == "MMPI2":
             try:
                 questionnaire = MMPI2Questionnaire.objects.filter(user=user_profile).first()
                 if not questionnaire:
-                    print(f"OCIR Questionnaire not found for user: {user_profile.name}")
-                    return Response({"error": "OCIR Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+                    print(f"MMPI2 Questionnaire not found for user: {user_profile.name}")
+                    return Response({"error": "MMPI2 Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+                else:
+                    print(f"MMPI2 Questionnaire data: {questionnaire}")
             except MMPI2Questionnaire.DoesNotExist:
-                print(f"OCIR Questionnaire not found for user: {user_profile.name}")
-                return Response({"error": "OCIR Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+                print(f"MMPI2 Questionnaire not found for user: {user_profile.name}")
+                return Response({"error": "MMPI2 Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+
         elif questionnaire_type == "ENNEAGRAM":
             try:
                 questionnaire = ENNEAGRAM.objects.filter(user=user_profile).first()
                 if not questionnaire:
-                    print(f"OCIR Questionnaire not found for user: {user_profile.name}")
-                    return Response({"error": "OCIR Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+                    print(f"ENNEAGRAM Questionnaire not found for user: {user_profile.name}")
+                    return Response({"error": "ENNEAGRAM Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
             except ENNEAGRAM.DoesNotExist:
-                print(f"OCIR Questionnaire not found for user: {user_profile.name}")
-                return Response({"error": "OCIR Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
+                print(f"ENNEAGRAM Questionnaire not found for user: {user_profile.name}")
+                return Response({"error": "ENNEAGRAM Questionnaire not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        else:
+            print(f"Unsupported questionnaire type: {questionnaire_type}")
+            return Response({"error": "Unsupported questionnaire type"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Create PDF response
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{questionnaire_type}_Report_{user_id}.pdf"'
 
-        # Generate the PDF content
         p = canvas.Canvas(response, pagesize=letter)
-        p.drawString(100, 750, f"{questionnaire_type} Report for User: {user_profile.name}")
+        width, height = letter
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name='Question', fontName='Helvetica-Bold', fontSize=12, spaceAfter=4))
+        styles.add(ParagraphStyle(name='Answer', fontName='Helvetica', fontSize=12, leftIndent=20, spaceAfter=10))
 
+        # Create a PDF document using Platypus for better text handling
+        from reportlab.platypus import SimpleDocTemplate, Spacer, Frame
+
+        # Re-initialize the PDF with Platypus
+        from io import BytesIO
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter,
+                                rightMargin=72, leftMargin=72,
+                                topMargin=72, bottomMargin=72)
+
+        story = []
+
+        # Header
+        header_title = Paragraph("Mental Health Report", styles['Title'])
+        header_subtitle = Paragraph("Therapy is Healing", styles['Italic'])
+
+        story.append(header_title)
+        story.append(header_subtitle)
+        story.append(Spacer(1, 12))
+
+        # Date and Created At
+        date_paragraph = Paragraph(f"Date: {date_today}", styles['Normal'])
+        # created_at_paragraph = Paragraph(f"Created At: {questionnaire.created_at.strftime('%B %d, %Y')}", styles['Normal'])
+        story.append(date_paragraph)
+        # story.append(created_at_paragraph)
+        story.append(Spacer(1, 12))
+
+        # Line Separator
+        from reportlab.platypus import HRFlowable
+        story.append(HRFlowable(width="100%", thickness=1, lineCap='round', color='black'))
+        story.append(Spacer(1, 12))
+
+        # Section Title
+        section_title = Paragraph(f"{questionnaire_type} Questionnaire", styles['Heading2'])
+        story.append(section_title)
+        story.append(Spacer(1, 12))
+
+        # Helper function to add question and answer
+        def add_question_answer(question, answer):
+            story.append(Paragraph(question, styles['Question']))
+            story.append(Paragraph(str(answer), styles['Answer']))
+            story.append(Spacer(1, 6))
+
+        # Add content based on questionnaire type
         if questionnaire_type == "ADHD":
-            p.drawString(100, 730, f"Trouble Wrapping Up Final Details: {questionnaire.troubleWrappingUpFinalDetails}")
-            p.drawString(100, 710, f"Difficulty Getting Organized: {questionnaire.difficultyGettingOrganized}")
-            p.drawString(100, 690, f"Problems Remembering Appointments: {questionnaire.problemsRememberingAppointments}")
-            p.drawString(100, 670, f"Avoid Delaying Thought-Intensive Tasks: {questionnaire.avoidDelayingThoughtIntensiveTasks}")
-            p.drawString(100, 650, f"Fidget or Squirm When Sitting: {questionnaire.fidgetOrSquirmWhenSitting}")
-            p.drawString(100, 630, f"Feel Overly Active or Compelled: {questionnaire.feelOverlyActiveCompelled}")
-            p.drawString(100, 610, f"Make Careless Mistakes: {questionnaire.makeCarelessMistakes}")
-            p.drawString(100, 590, f"Difficulty Keeping Attention: {questionnaire.difficultyKeepingAttention}")
-            p.drawString(100, 570, f"Difficulty Concentrating on Direct Speech: {questionnaire.difficultyConcentratingOnDirectSpeech}")
-            p.drawString(100, 550, f"Misplace or Difficulty Finding Things: {questionnaire.misplaceOrDifficultyFindingThings}")
+            add_question_answer("Trouble Wrapping Up Final Details:", questionnaire.troubleWrappingUpFinalDetails)
+            add_question_answer("Difficulty Getting Organized:", questionnaire.difficultyGettingOrganized)
+            add_question_answer("Problems Remembering Appointments:", questionnaire.problemsRememberingAppointments)
+            add_question_answer("Avoid Delaying Thought-Intensive Tasks:", questionnaire.avoidDelayingThoughtIntensiveTasks)
+            add_question_answer("Fidget or Squirm When Sitting:", questionnaire.fidgetOrSquirmWhenSitting)
+            add_question_answer("Feel Overly Active or Compelled:", questionnaire.feelOverlyActiveCompelled)
+            add_question_answer("Make Careless Mistakes:", questionnaire.makeCarelessMistakes)
+            add_question_answer("Difficulty Keeping Attention:", questionnaire.difficultyKeepingAttention)
+            add_question_answer("Difficulty Concentrating on Direct Speech:", questionnaire.difficultyConcentratingOnDirectSpeech)
+            add_question_answer("Misplace or Difficulty Finding Things:", questionnaire.misplaceOrDifficultyFindingThings)
 
         elif questionnaire_type == "GAD":
-            p.drawString(100, 730, f"Feeling Nervous: {questionnaire.feelingNervous}")
-            p.drawString(100, 710, f"Inability to Control Worrying: {questionnaire.inabilityToControlWorrying}")
-            p.drawString(100, 690, f"Excessive Worrying: {questionnaire.excessiveWorrying}")
-            p.drawString(100, 670, f"Trouble Relaxing: {questionnaire.troubleRelaxing}")
-            p.drawString(100, 650, f"Restlessness: {questionnaire.restlessness}")
-            p.drawString(100, 630, f"Irritability: {questionnaire.irritability}")
-            p.drawString(100, 610, f"Fear of Something Awful: {questionnaire.fearOfSomethingAwful}")
+            add_question_answer("Feeling Nervous:", questionnaire.feelingNervous)
+            add_question_answer("Inability to Control Worrying:", questionnaire.inabilityToControlWorrying)
+            add_question_answer("Excessive Worrying:", questionnaire.excessiveWorrying)
+            add_question_answer("Trouble Relaxing:", questionnaire.troubleRelaxing)
+            add_question_answer("Restlessness:", questionnaire.restlessness)
+            add_question_answer("Irritability:", questionnaire.irritability)
+            add_question_answer("Fear of Something Awful:", questionnaire.fearOfSomethingAwful)
 
         elif questionnaire_type == "MDQ":
-            p.drawString(100, 730, f"Feel Dependent On Others: {questionnaire.feelDependentOnOthers}")
-            p.drawString(100, 710, f"Avoid Independent Decision Making: {questionnaire.avoidIndependentDecisionMaking}")
-            p.drawString(100, 690, f"Feel Weak Or Tired: {questionnaire.feelWeakOrTired}")
-            p.drawString(100, 670, f"Difficulty Concentrating: {questionnaire.difficultyConcentrating}")
-            p.drawString(100, 650, f"Feel Dissatisfied With Self: {questionnaire.feelDissatisfiedWithSelf}")
-            p.drawString(100, 630, f"Consider Self A Failure: {questionnaire.considerSelfAFailure}")
-            p.drawString(100, 610, f"Trouble Controlling Temper: {questionnaire.troubleControllingTemper}")
-            p.drawString(100, 590, f"Hesitate When Making Decisions: {questionnaire.hesitateWhenMakingDecisions}")
-            p.drawString(100, 570, f"Rely On Others For Decisions: {questionnaire.relyOnOthersForDecisions}")
-            p.drawString(100, 550, f"Feel Hyper To The Point Of Concern: {questionnaire.feelHyperToThePointOfConcern}")
-            p.drawString(100, 530, f"Irritability Leading To Conflict: {questionnaire.irritabilityLeadingToConflict}")
-            p.drawString(100, 510, f"Increased Self Confidence: {questionnaire.increasedSelfConfidence}")
-            p.drawString(100, 490, f"Less Sleep Than Usual: {questionnaire.lessSleepThanUsual}")
-            p.drawString(100, 470, f"More Talkative Than Usual: {questionnaire.moreTalkativeThanUsual}")
-            p.drawString(100, 450, f"Racing Thoughts: {questionnaire.racingThoughts}")
-            p.drawString(100, 430, f"Easily Distracted: {questionnaire.easilyDistracted}")
-            p.drawString(100, 410, f"More Energy Than Usual: {questionnaire.moreEnergyThanUsual}")
-            p.drawString(100, 390, f"More Active Than Usual: {questionnaire.moreActiveThanUsual}")
-            p.drawString(100, 370, f"More Social Than Usual: {questionnaire.moreSocialThanUsual}")
-        
-        if questionnaire_type == "NPQ":
-            p.drawString(100, 730, f"Feel Dependent On Others: {questionnaire.feelDependentOnOthers}")
-            p.drawString(100, 710, f"Avoid Independent Decisions: {questionnaire.avoidIndependentDecisions}")
-            p.drawString(100, 690, f"Feel Weak Or Tired: {questionnaire.feelWeakOrTired}")
-            p.drawString(100, 670, f"Find It Difficult To Concentrate: {questionnaire.findItDifficultToConcentrate}")
-            p.drawString(100, 650, f"Frequently Dissatisfied With Self: {questionnaire.frequentlyDissatisfiedWithSelf}")
-            p.drawString(100, 630, f"Consider Self A Failure: {questionnaire.considerSelfAFailure}")
-            p.drawString(100, 610, f"Trouble Controlling Temper: {questionnaire.troubleControllingTemper}")
-            p.drawString(100, 590, f"Hesitate When Making Decisions: {questionnaire.hesitateWhenMakingDecisions}")
-            p.drawString(100, 570, f"Rely On Others For Decisions: {questionnaire.relyOnOthersForDecisions}")
-        elif questionnaire_type == "BFT":
-            p.drawString(100, 730, f"Talks A Lot: {questionnaire.talksALot}")
-            p.drawString(100, 710, f"Notices Weak Points: {questionnaire.noticesWeakPoints}")
-            p.drawString(100, 690, f"Does Things Carefully: {questionnaire.doesThingsCarefully}")
-            p.drawString(100, 670, f"Is Sad/Depressed: {questionnaire.isSadDepressed}")
-            p.drawString(100, 650, f"Is Original: {questionnaire.isOriginal}")
-            p.drawString(100, 630, f"Keeps Thoughts to Themselves: {questionnaire.keepsThoughtsToThemselves}")
-            p.drawString(100, 610, f"Is Helpful Not Selfish: {questionnaire.isHelpfulNotSelfish}")
-            p.drawString(100, 590, f"Is Careless: {questionnaire.isCareless}")
-            p.drawString(100, 570, f"Is Relaxed: {questionnaire.isRelaxed}")
-            p.drawString(100, 550, f"Is Curious: {questionnaire.isCurious}")
-        elif questionnaire_type == "OCIR":
-            p.drawString(100, 730, f"Saved Too Many Things: {questionnaire.savedTooManyThings}")
-            p.drawString(100, 710, f"Check Things More Often: {questionnaire.checkThingsMoreOften}")
-            p.drawString(100, 690, f"Upset If Not Arranged Properly: {questionnaire.upsetIfNotArrangedProperly}")
-            p.drawString(100, 670, f"Compelled To Count: {questionnaire.compelledToCount}")
-            p.drawString(100, 650, f"Difficult To Touch Touched Objects: {questionnaire.difficultToTouchTouchedObjects}")
-            p.drawString(100, 630, f"Difficult To Control Thoughts: {questionnaire.difficultToControlThoughts}")
-            p.drawString(100, 610, f"Collect Unnecessary Things: {questionnaire.collectUnnecessaryThings}")
-            p.drawString(100, 590, f"Repeatedly Check Items: {questionnaire.repeatedlyCheckItems}")
-            p.drawString(100, 570, f"Upset If Others Change Arrangement: {questionnaire.upsetIfOthersChangeArrangement}")
-            p.drawString(100, 550, f"Feel Compelled To Repeat Numbers: {questionnaire.feelCompelledToRepeatNumbers}")
-
+            add_question_answer("Feel Dependent On Others:", questionnaire.feelDependentOnOthers)
+            add_question_answer("Avoid Independent Decision Making:", questionnaire.avoidIndependentDecisionMaking)
+            add_question_answer("Feel Weak Or Tired:", questionnaire.feelWeakOrTired)
+            add_question_answer("Difficulty Concentrating:", questionnaire.difficultyConcentrating)
+            add_question_answer("Feel Dissatisfied With Self:", questionnaire.feelDissatisfiedWithSelf)
+            add_question_answer("Consider Self A Failure:", questionnaire.considerSelfAFailure)
+            add_question_answer("Trouble Controlling Temper:", questionnaire.troubleControllingTemper)
+            add_question_answer("Hesitate When Making Decisions:", questionnaire.hesitateWhenMakingDecisions)
+            add_question_answer("Rely On Others For Decisions:", questionnaire.relyOnOthersForDecisions)
+            add_question_answer("Feel Hyper To The Point Of Concern:", questionnaire.feelHyperToThePointOfConcern)
+            add_question_answer("Irritability Leading To Conflict:", questionnaire.irritabilityLeadingToConflict)
+            add_question_answer("Increased Self Confidence:", questionnaire.increasedSelfConfidence)
+            add_question_answer("Less Sleep Than Usual:", questionnaire.lessSleepThanUsual)
+            add_question_answer("More Talkative Than Usual:", questionnaire.moreTalkativeThanUsual)
+            add_question_answer("Racing Thoughts:", questionnaire.racingThoughts)
+            add_question_answer("Easily Distracted:", questionnaire.easilyDistracted)
+            add_question_answer("More Energy Than Usual:", questionnaire.moreEnergyThanUsual)
+            add_question_answer("More Active Than Usual:", questionnaire.moreActiveThanUsual)
+            add_question_answer("More Social Than Usual:", questionnaire.moreSocialThanUsual)
 
         elif questionnaire_type == "BDI":
-            p.drawString(100, 730, f"Feelings Of Sadness: {questionnaire.feelingsOfSadness}")
-            p.drawString(100, 710, f"Thoughts About Future: {questionnaire.thoughtsAboutFuture}")
-            p.drawString(100, 690, f"Definition Of Success: {questionnaire.definitionOfSuccess}")
-            p.drawString(100, 670, f"Ability To Experience Pleasure: {questionnaire.abilityToExperiencePleasure}")
-            p.drawString(100, 650, f"Negative Self Statements: {questionnaire.negativeSelfStatements}")
-            p.drawString(100, 630, f"Feelings Of Punishment: {questionnaire.feelingsOfPunishment}")
-            p.drawString(100, 610, f"Disappointments In Self: {questionnaire.disappointmentsInSelf}")
-            p.drawString(100, 590, f"Handling Self Criticism: {questionnaire.handlingSelfCriticism}")
-            p.drawString(100, 570, f"Thoughts Of Self Harm: {questionnaire.thoughtsOfSelfHarm}")
-            p.drawString(100, 550, f"Frequency Of Crying: {questionnaire.frequencyOfCrying}")
-        elif questionnaire_type == "ENNEAGRAM":
-            p.drawString(100, 730, f"Creative Artistic View: {questionnaire.creativeArtisticView}")
-            p.drawString(100, 710, f"Feel Different From Others: {questionnaire.feelDifferentFromOthers}")
-            p.drawString(100, 690, f"Experience Melancholy: {questionnaire.experienceMelancholy}")
-            p.drawString(100, 670, f"Overly Sensitive: {questionnaire.overlySensitive}")
-            p.drawString(100, 650, f"Feel Something Is Missing: {questionnaire.feelSomethingIsMissing}")
-            p.drawString(100, 630, f"Feel Envious Of Others: {questionnaire.feelEnviousOfOthers}")
-            p.drawString(100, 610, f"Thrive In Creative Environments: {questionnaire.thriveInCreativeEnvironments}")
-            p.drawString(100, 590, f"Become Withdrawn When Misunderstood: {questionnaire.canBecomeWithdrawnWhenMisunderstood}")
-            p.drawString(100, 570, f"Romantic Longing: {questionnaire.romanticLonging}")
-            p.drawString(100, 550, f"Caught In Fantasy World: {questionnaire.caughtInFantasyWorld}")
-            p.drawString(100, 530, f"Enjoy Unique Elegant Things: {questionnaire.enjoyUniqueElegantThings}")
-            p.drawString(100, 510, f"Moody When Stressed: {questionnaire.moodyWhenStressed}")
-            p.drawString(100, 490, f"Reflective And Search For Meaning: {questionnaire.reflectiveAndSearchForMeaning}")
-            p.drawString(100, 470, f"Strive To Be Unique: {questionnaire.striveToBeUnique}")
-            p.drawString(100, 450, f"Manners And Good Taste: {questionnaire.mannersAndGoodTaste}")
-            p.drawString(100, 430, f"Seen As Overly Dramatic: {questionnaire.seenAsOverlyDramatic}")
-            p.drawString(100, 410, f"Important To Understand Feelings: {questionnaire.importantToUnderstandFeelings}")
-        elif questionnaire_type == "MMPI2Questionnaire":
-            p.drawString(100, 730, f"Rarely Worry About Health: {questionnaire.rarelyWorryAboutHealth}")
-            p.drawString(100, 710, f"Always Tell The Truth: {questionnaire.alwaysTellTruth}")
-            p.drawString(100, 690, f"Feel Tired Most Of The Time: {questionnaire.feelTiredMostOfTheTime}")
-            p.drawString(100, 670, f"Feel Punished Without Cause: {questionnaire.feelPunishedWithoutCause}")
-            p.drawString(100, 650, f"Bothered By Upset Stomach: {questionnaire.botheredByUpsetStomach}")
-            p.drawString(100, 630, f"Get A Lot Of Headaches: {questionnaire.getLotOfHeadaches}")
-            p.drawString(100, 610, f"Like To Arrange Flowers: {questionnaire.likeToArrangeFlowers}")
-            p.drawString(100, 590, f"Someone Has It In For Me: {questionnaire.someoneHasItInForMe}")
-            p.drawString(100, 570, f"Often Disturbing Thoughts: {questionnaire.oftenDisturbingThoughts}")
-            p.drawString(100, 550, f"Hear Things Others Can't Hear: {questionnaire.hearThingsOthersCantHear}")
-            p.drawString(100, 530, f"Am Happier Than Most People: {questionnaire.amHappierThanMostPeople}")
-            p.drawString(100, 510, f"Am Easily Embarrassed: {questionnaire.amEasilyEmbarrassed}")
+            add_question_answer("Feelings Of Sadness:", questionnaire.feelingsOfSadness)
+            add_question_answer("Thoughts About Future:", questionnaire.thoughtsAboutFuture)
+            add_question_answer("Definition Of Success:", questionnaire.definitionOfSuccess)
+            add_question_answer("Ability To Experience Pleasure:", questionnaire.abilityToExperiencePleasure)
+            add_question_answer("Negative Self Statements:", questionnaire.negativeSelfStatements)
+            add_question_answer("Feelings Of Punishment:", questionnaire.feelingsOfPunishment)
+            add_question_answer("Disappointments In Self:", questionnaire.disappointmentsInSelf)
+            add_question_answer("Handling Self Criticism:", questionnaire.handlingSelfCriticism)
+            add_question_answer("Thoughts Of Self Harm:", questionnaire.thoughtsOfSelfHarm)
+            add_question_answer("Frequency Of Crying:", questionnaire.frequencyOfCrying)
 
-        p.showPage()
-        p.save()
+        elif questionnaire_type == "NPQ":
+            add_question_answer("Feel Dependent On Others:", questionnaire.feelDependentOnOthers)
+            add_question_answer("Avoid Independent Decisions:", questionnaire.avoidIndependentDecisions)
+            add_question_answer("Feel Weak Or Tired:", questionnaire.feelWeakOrTired)
+            add_question_answer("Find It Difficult To Concentrate:", questionnaire.findItDifficultToConcentrate)
+            add_question_answer("Frequently Dissatisfied With Self:", questionnaire.frequentlyDissatisfiedWithSelf)
+            add_question_answer("Consider Self A Failure:", questionnaire.considerSelfAFailure)
+            add_question_answer("Trouble Controlling Temper:", questionnaire.troubleControllingTemper)
+            add_question_answer("Hesitate When Making Decisions:", questionnaire.hesitateWhenMakingDecisions)
+            add_question_answer("Rely On Others For Decisions:", questionnaire.relyOnOthersForDecisions)
+
+        elif questionnaire_type == "BFT":
+            add_question_answer("Talks A Lot:", questionnaire.talksALot)
+            add_question_answer("Notices Weak Points:", questionnaire.noticesWeakPoints)
+            add_question_answer("Does Things Carefully:", questionnaire.doesThingsCarefully)
+            add_question_answer("Is Sad/Depressed:", questionnaire.isSadDepressed)
+            add_question_answer("Is Original:", questionnaire.isOriginal)
+            add_question_answer("Keeps Thoughts to Themselves:", questionnaire.keepsThoughtsToThemselves)
+            add_question_answer("Is Helpful Not Selfish:", questionnaire.isHelpfulNotSelfish)
+            add_question_answer("Is Careless:", questionnaire.isCareless)
+            add_question_answer("Is Relaxed:", questionnaire.isRelaxed)
+            add_question_answer("Is Curious:", questionnaire.isCurious)
+
+        elif questionnaire_type == "OCIR":
+            add_question_answer("Saved Too Many Things:", questionnaire.savedTooManyThings)
+            add_question_answer("Check Things More Often:", questionnaire.checkThingsMoreOften)
+            add_question_answer("Upset If Not Arranged Properly:", questionnaire.upsetIfNotArrangedProperly)
+            add_question_answer("Compelled To Count:", questionnaire.compelledToCount)
+            add_question_answer("Difficult To Touch Touched Objects:", questionnaire.difficultToTouchTouchedObjects)
+            add_question_answer("Difficult To Control Thoughts:", questionnaire.difficultToControlThoughts)
+            add_question_answer("Collect Unnecessary Things:", questionnaire.collectUnnecessaryThings)
+            add_question_answer("Repeatedly Check Items:", questionnaire.repeatedlyCheckItems)
+            add_question_answer("Upset If Others Change Arrangement:", questionnaire.upsetIfOthersChangeArrangement)
+            add_question_answer("Feel Compelled To Repeat Numbers:", questionnaire.feelCompelledToRepeatNumbers)
+
+        elif questionnaire_type == "MMPI2":
+            add_question_answer("Rarely Worry About Health:", questionnaire.rarelyWorryAboutHealth)
+            add_question_answer("Always Tell The Truth:", questionnaire.alwaysTellTruth)
+            add_question_answer("Feel Tired Most Of The Time:", questionnaire.feelTiredMostOfTheTime)
+            add_question_answer("Feel Punished Without Cause:", questionnaire.feelPunishedWithoutCause)
+            add_question_answer("Bothered By Upset Stomach:", questionnaire.botheredByUpsetStomach)
+            add_question_answer("Get A Lot Of Headaches:", questionnaire.getLotOfHeadaches)
+            add_question_answer("Like To Arrange Flowers:", questionnaire.likeToArrangeFlowers)
+            add_question_answer("Someone Has It In For Me:", questionnaire.someoneHasItInForMe)
+            add_question_answer("Often Disturbing Thoughts:", questionnaire.oftenDisturbingThoughts)
+            add_question_answer("Hear Things Others Can't Hear:", questionnaire.hearThingsOthersCantHear)
+            add_question_answer("Am Happier Than Most People:", questionnaire.amHappierThanMostPeople)
+            add_question_answer("Am Easily Embarrassed:", questionnaire.amEasilyEmbarrassed)
+
+        elif questionnaire_type == "ENNEAGRAM":
+            add_question_answer("Creative Artistic View:", questionnaire.creativeArtisticView)
+            add_question_answer("Feel Different From Others:", questionnaire.feelDifferentFromOthers)
+            add_question_answer("Experience Melancholy:", questionnaire.experienceMelancholy)
+            add_question_answer("Overly Sensitive:", questionnaire.overlySensitive)
+            add_question_answer("Feel Something Is Missing:", questionnaire.feelSomethingIsMissing)
+            add_question_answer("Feel Envious Of Others:", questionnaire.feelEnviousOfOthers)
+            add_question_answer("Thrive In Creative Environments:", questionnaire.thriveInCreativeEnvironments)
+            add_question_answer("Become Withdrawn When Misunderstood:", questionnaire.canBecomeWithdrawnWhenMisunderstood)
+            add_question_answer("Romantic Longing:", questionnaire.romanticLonging)
+            add_question_answer("Caught In Fantasy World:", questionnaire.caughtInFantasyWorld)
+            add_question_answer("Enjoy Unique Elegant Things:", questionnaire.enjoyUniqueElegantThings)
+            add_question_answer("Moody When Stressed:", questionnaire.moodyWhenStressed)
+            add_question_answer("Reflective And Search For Meaning:", questionnaire.reflectiveAndSearchForMeaning)
+            add_question_answer("Strive To Be Unique:", questionnaire.striveToBeUnique)
+            add_question_answer("Manners And Good Taste:", questionnaire.mannersAndGoodTaste)
+            add_question_answer("Seen As Overly Dramatic:", questionnaire.seenAsOverlyDramatic)
+            add_question_answer("Important To Understand Feelings:", questionnaire.importantToUnderstandFeelings)
+
+        # Build the PDF
+        doc.build(story)
+
+        # Move the buffer's position to the beginning
+        buffer.seek(0)
+
+        # Write the buffer to the response
+        response.write(buffer.getvalue())
+        buffer.close()
+
         print(f"PDF report generated successfully for user: {user_profile.name}, questionnaire type: {questionnaire_type}")
 
         return response
-
-
 class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
