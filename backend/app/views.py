@@ -112,7 +112,6 @@ import logging
 # Configure logging
 logger = logging.getLogger(__name__)
 
-
 class MMPI2QuestionnaireStatsView(APIView):
     """
     API View to aggregate MMPI2 questionnaire data.
@@ -134,15 +133,42 @@ class MMPI2QuestionnaireStatsView(APIView):
             "amHappierThanMostPeople",
             "amEasilyEmbarrassed",
         ]
-        
+
         data = {}
         for q in questions:
             true_count = MMPI2Questionnaire.objects.filter(**{q: True}).count()
             false_count = MMPI2Questionnaire.objects.filter(**{q: False}).count()
             data[q] = {"True": true_count, "False": false_count}
             logger.debug(f"Question: {q}, True: {true_count}, False: {false_count}")
-        
+
         logger.info("MMPI2 Questionnaire statistics aggregated successfully.")
+        return Response(data, status=status.HTTP_200_OK)
+
+class GADQuestionnaireStatsView(APIView):
+    """
+    API View to aggregate GAD questionnaire data.
+    Returns counts of True and False responses for each question.
+    """
+    def get(self, request):
+        # List of GAD questionnaire questions (model field names)
+        questions = [
+            "feelingNervous",
+            "inabilityToControlWorrying",
+            "excessiveWorrying",
+            "troubleRelaxing",
+            "restlessness",
+            "irritability",
+            "fearOfSomethingAwful",
+        ]
+
+        data = {}
+        for q in questions:
+            true_count = GAD.objects.filter(**{q: True}).count()
+            false_count = GAD.objects.filter(**{q: False}).count()
+            data[q] = {"True": true_count, "False": false_count}
+            logger.debug(f"Question: {q}, True: {true_count}, False: {false_count}")
+
+        logger.info("GAD Questionnaire statistics aggregated successfully.")
         return Response(data, status=status.HTTP_200_OK)
 
 class QuestionnaireReportPDFView(APIView):
