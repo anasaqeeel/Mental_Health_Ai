@@ -1,3 +1,8 @@
+// frontend/src/Pages/Visualize/Visualization.jsx
+
+import React, { useEffect, useState, useCallback } from 'react';
+import { Bar } from 'react-chartjs-2';
+import { Container, Spinner, Alert, Form } from 'react-bootstrap';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import {
@@ -126,6 +131,11 @@ const Visualization = () => {
         },
     };
 
+    // List of available questionnaires
+    const [questionnaires, setQuestionnaires] = useState([]);
+    const [selectedQuestionnaire, setSelectedQuestionnaire] = useState('');
+
+    // Initialize available questionnaires
     useEffect(() => {
         fetchData();
     }, [selectedQuestionnaire]);

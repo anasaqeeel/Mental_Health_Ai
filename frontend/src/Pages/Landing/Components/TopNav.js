@@ -35,14 +35,18 @@ export default function TopNav() {
     <>
       <Navbar expand="lg" className="custom-navbar" sticky="top">
         <Container fluid>
-          <Navbar.Brand href="/">Therapy Is Healing</Navbar.Brand>
+          <Navbar.Brand href="/landing">Therapy Is Healing</Navbar.Brand>
+
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav" >
             <Nav className="mx-auto">
-              <Nav.Link href="/interview">Take An Interview</Nav.Link>
-              <Nav.Link href="/questionnaire">Seek Help</Nav.Link>
+              {/* <Nav.Link href="/landing">Take An Interview</Nav.Link>
+              <Nav.Link href="/landing">Seek Help</Nav.Link> */}
               <Nav.Link onClick={handleVideoChatClick}>Start Video Chat</Nav.Link>
               <Nav.Link onClick={handleVisualizeClick}>Visualize</Nav.Link> {/* New Button */}
+              {currentUser && (
+                <span className="navbar-email text-white">Signed in as: {currentUser.email}</span>
+              )}
             </Nav>
             <Nav>
               {currentUser ? (
