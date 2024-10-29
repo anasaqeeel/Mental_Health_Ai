@@ -1,80 +1,83 @@
-import React from 'react'
-import { MDBFooter, MDBContainer, MDBRow, MDBCol, MDBIcon, MDBInput, MDBBtn } from 'mdb-react-ui-kit';
+import React from 'react';
 
-export default function Footer() {
+const Footer = () => {
   return (
-    <div>
-    <MDBFooter className='text-center' color='white' bgColor='dark'>
-      <MDBContainer className='p-4'>
-        <h1 style={{marginBottom:"3rem"}}>Contact Us</h1>
-        <section className=''>
-          <form action=''>
-            <MDBRow className='d-flex justify-content-center'>
-              <MDBCol size="auto">
-                <p className='pt-2'>
-                  <strong>Sign up for personalized emails and queries</strong>
-                </p>
-              </MDBCol>
+    <footer className="bg-dark text-white py-5">
+      <div className="container">
+        <div className="row">
+          {/* Contact Us Section */}
+          <div className="col-md-4">
+            <h3 className="h5 mb-4">Contact Us</h3>
+            <p className="mb-2"><strong>Email:</strong> info@example.com</p>
+            <p className="mb-2"><strong>Phone:</strong> (123) 456-7890</p>
+            <p><strong>Address:</strong> 123 Main St, City, Country</p>
+          </div>
 
-              <MDBCol md='5' start>
-                <MDBInput contrast type='email' placeholder='Email address' className='mb-4' />
-              </MDBCol>
+          {/* Quick Links Section */}
+          <div className="col-md-4">
+            <h3 className="h5 mb-4">Quick Links</h3>
+            <ul className="list-unstyled">
+              <li className="mb-2"><a href="#" className="text-white text-decoration-none">Home</a></li>
+              <li className="mb-2"><a href="#" className="text-white text-decoration-none">About</a></li>
+              <li className="mb-2"><a href="#" className="text-white text-decoration-none">Services</a></li>
+              <li className="mb-2"><a href="#" className="text-white text-decoration-none">Contact</a></li>
+            </ul>
+          </div>
 
-              <MDBCol size="auto">
-                <MDBBtn outline color='light' type='submit' className='mb-4'>
-                  Subscribe
-                </MDBBtn>
-              </MDBCol>
-            </MDBRow>
-          </form>
-        </section>
+          {/* Newsletter Section */}
+          <div className="col-md-4">
+            <h3 className="h5 mb-4">Newsletter</h3>
+            <p>Sign up for personalized emails and queries</p>
+            <form className="d-flex">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="form-control me-2 mb-2"
+                style={{ backgroundColor: '#343a40', color: 'white' }}
+              />
+              <button
+                type="submit"
+                className="btn btn-primary mb-2"
+              >
+                Subscribe
+              </button>
+            </form>
+          </div>
+        </div>
 
-        <section className='mb-4'>
-          <center>
-            <p style={{maxWidth:"600px",}}>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Sunt distinctio earum repellat quaerat
-                voluptatibus placeat nam, commodi optio pariatur est quia magnam eum harum corrupti dicta, aliquam
-                sequi voluptate quas.
-            </p>
-          </center>
-        </section>
-
-
-<section className='mb-4'>
-          <MDBBtn outline color="light" floating className='m-1' href='#!' role='button'>
-            <MDBIcon fab icon='facebook-f' />
-          </MDBBtn>
-
-          <MDBBtn outline color="light" floating className='m-1' href='#!' role='button'>
-            <MDBIcon fab icon='twitter' />
-          </MDBBtn>
-
-          <MDBBtn outline color="light" floating className='m-1' href='#!' role='button'>
-            <MDBIcon fab icon='google' />
-          </MDBBtn>
-
-          <MDBBtn outline color="light" floating className='m-1' href='#!' role='button'>
-            <MDBIcon fab icon='instagram' />
-          </MDBBtn>
-
-          <MDBBtn outline color="light" floating className='m-1' href='#!' role='button'>
-            <MDBIcon fab icon='linkedin-in' />
-          </MDBBtn>
-
-          <MDBBtn outline color="light" floating className='m-1' href='#!' role='button'>
-            <MDBIcon fab icon='github' />
-          </MDBBtn>
-        </section>
-
-      </MDBContainer>
-
-      <div className='text-center p-3' style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}>
-        Made With :
-        <a className='text-white' href='https://mdbootstrap.com/'>
-          React and Django
-        </a>
+        {/* Social Icons and Footer Text */}
+        <div className="text-center mt-4">
+          {/* <p className="mb-3" style={{ maxWidth: '600px', margin: '0 auto' }}>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Sunt distinctio earum repellat quaerat
+            voluptatibus placeat nam, commodi optio pariatur est quia magnam eum harum corrupti dicta, aliquam
+            sequi voluptate quas.
+          </p> */}
+          <div className="mb-4">
+            <a href="#!" className="btn btn-outline-light btn-floating m-1" role="button">
+              <i className="fab fa-facebook-f"></i>
+            </a>
+            <a href="#!" className="btn btn-outline-light btn-floating m-1" role="button">
+              <i className="fab fa-twitter"></i>
+            </a>
+            <a href="#!" className="btn btn-outline-light btn-floating m-1" role="button">
+              <i className="fab fa-google"></i>
+            </a>
+            <a href="#!" className="btn btn-outline-light btn-floating m-1" role="button">
+              <i className="fab fa-instagram"></i>
+            </a>
+            <a href="#!" className="btn btn-outline-light btn-floating m-1" role="button">
+              <i className="fab fa-linkedin-in"></i>
+            </a>
+            <a href="#!" className="btn btn-outline-light btn-floating m-1" role="button">
+              <i className="fab fa-github"></i>
+            </a>
+          </div>
+          {/* <p>&copy; 2023 Your Company. All rights reserved.</p>
+          <p>Made with React and Django</p> */}
+        </div>
       </div>
-    </MDBFooter>
-    </div>
-  )
+    </footer>
+  );
 }
+
+export default Footer;

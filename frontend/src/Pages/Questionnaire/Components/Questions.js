@@ -3,6 +3,7 @@ import { ProgressBar, Button, Form, Alert, Card, Container, Row, Col } from 'rea
 import DatePicker from 'react-datepicker';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import 'react-datepicker/dist/react-datepicker.css';
 import '../Styles/questions.styles.css';
 
@@ -427,75 +428,88 @@ const Questionnaire = ({ questionnaireName, userId }) => {
   };
   return (
     <Container className="py-5">
-      <Row className="justify-content-center">
-        <Col md={8} lg={6}>
-          <Card className="shadow-lg">
-            <Card.Body className="p-4">
-              <h1 className="text-center mb-4 text-primary">Questionnaire</h1>
-              <p className="text-center mb-4 text-muted">
-                Just answer some simple questions for us to get to know you better :)
-              </p>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentStep}
+          initial={{ opacity: 0, x: 100 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -100 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Row className="justify-content-center">
 
-              <ProgressBar
-                now={(currentStep + 1) / selectedData.questions.length * 100}
-                className="mb-4 shadow-sm"
-                variant="info"
-              />
+            <Col md={8} lg={6}>
+              <Card className="shadow-lg">
+                <Card.Body className="p-4">
+                  <h1 className="text-center mb-4 text-primary">Questionnaire</h1>
+                  <p className="text-center mb-4 text-muted">
+                    Just answer some simple questions for us to get to know you better :)
+                  </p>
 
-              {showAlert && (
-                <Alert variant="danger" onClose={() => setShowAlert(false)} dismissible className="mb-4">
-                  Please answer the question before proceeding.
-                </Alert>
-              )}
+                  <ProgressBar
+                    now={(currentStep + 1) / selectedData.questions.length * 100}
+                    className="mb-4 shadow-sm"
+                    variant="info"
+                  />
 
-              <Form className="mb-4">
-                {renderQuestion()}
-              </Form>
+                  {showAlert && (
+                    <Alert variant="danger" onClose={() => setShowAlert(false)} dismissible className="mb-4">
+                      Please answer the question before proceeding.
+                    </Alert>
+                  )}
 
-              <div className="d-flex justify-content-between">
-                <Button
-                  variant="outline-secondary"
-                  onClick={handleBack}
-                  disabled={currentStep === 0}
-                  className="shadow-sm"
-                >
-                  Back
-                </Button>
-                {currentStep === selectedData.questions.length - 1 ? (
-                  <Button
-                    variant="primary"
-                    onClick={handleSubmit}
-                    className="shadow-sm"
-                  >
-                    Submit
-                  </Button>
-                ) : (
-                  <Button
-                    variant="primary"
-                    onClick={handleNext}
-                    className="shadow-sm"
-                  >
-                    Next
-                  </Button>
-                )}
-              </div>
+                  <Form className="mb-4">
+                    {renderQuestion()}
+                  </Form>
 
-              {/* Add the Generate Report Button */}
-              <div className="text-center mt-4">
-                <Button
-                  variant="success"
-                  onClick={generateReport}
-                  className="shadow-sm"
-                  disabled={!isCompleted}  // Enable only after submission
-                >
-                  View Submitted Questionnaire Report
-                </Button>
-              </div>
 
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+                  <div className="d-flex justify-content-between">
+                    <Button
+                      variant="outline-secondary"
+                      onClick={handleBack}
+                      disabled={currentStep === 0}
+                      className="shadow-sm"
+                    >
+                      Back
+                    </Button>
+                    {currentStep === selectedData.questions.length - 1 ? (
+                      <Button
+                        variant="primary"
+                        onClick={handleSubmit}
+                        className="shadow-sm"
+                      >
+                        Submit
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="primary"
+                        onClick={handleNext}
+                        className="shadow-sm"
+                      >
+                        Next
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Add the Generate Report Button */}
+                  <div className="text-center mt-4">
+                    <Button
+                      variant="success"
+                      onClick={generateReport}
+                      className="shadow-sm"
+                      disabled={!isCompleted}  // Enable only after submission
+                    >
+                      View Submitted Questionnaire Report
+                    </Button>
+                  </div>
+
+                </Card.Body>
+              </Card>
+            </Col>
+
+          </Row>
+        </motion.div>
+      </AnimatePresence>
     </Container>
   );
 }
