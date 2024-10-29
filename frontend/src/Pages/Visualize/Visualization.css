@@ -1,0 +1,45 @@
+.visualization-container {
+    padding: 20px;
+    background-color: #f5f7fa;
+    font-family: Arial, sans-serif;
+}
+
+.visualization-title {
+    text-align: center;
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.dropdown-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.dropdown {
+    padding: 10px;
+    font-size: 1.1rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.chart-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.chart-item {
+    margin: 40px 0;
+    width: 80%;
+}
+
+.chart-item h3 {
+    text-align: center;
+    font-size: 1.6rem;
+    color: #555;
+    margin-bottom: 10px;
+}

@@ -5,7 +5,9 @@ from .views import (
     MMPI2QuestionnaireViewSet, UploadVideoView, UserQuestionnaireCreateView,
     get_matched_professionals, BFTQuestionnaireCreateView, NPQViewSet,
     ADHDViewSet, BDIViewSet, GADViewSet, MDQViewSet, OCIRViewSet,
-    IBTViewSet, QuestionnaireReportPDFView, MMPI2QuestionnaireStatsView
+    IBTViewSet, QuestionnaireReportPDFView,
+    GADQuestionnaireStatsView, OCIRQuestionnaireStatsView, ADHDQuestionnaireStatsView, EnneagramQuestionnaireStatsView, 
+    BDIQuestionnaireStatsView, 
 )
 router = DefaultRouter()
 # router.register(r'users', UserProfileViewSet)
@@ -54,8 +56,14 @@ urlpatterns = [
     path('api/ibt/<int:pk>/', IBTViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='ibt-detail'),
 
     #visualize 
-    path('api/mmpi2-questionnaire/stats/', MMPI2QuestionnaireStatsView.as_view(), name='mmpi2-questionnaire-stats'),
+    # path('api/mmpi2-questionnaire/stats/', MMPI2QuestionnaireStatsView.as_view(), name='mmpi2-questionnaire-stats'),
 
+    path('api/gad-questionnaire/stats/', GADQuestionnaireStatsView.as_view(), name='gad_questionnaire_stats'),
+    path('api/adhd-questionnaire/stats/', ADHDQuestionnaireStatsView.as_view(), name='adhd_questionnaire_stats'),
+    path('api/bdi-questionnaire/stats/', BDIQuestionnaireStatsView.as_view(), name='bdi_questionnaire_stats'),
+    path('api/ocir-questionnaire/stats/', OCIRQuestionnaireStatsView.as_view(), name='ocir_questionnaire_stats'),
+    path('api/enneagram-questionnaire/stats/', EnneagramQuestionnaireStatsView.as_view(), name='enneagram_questionnaire_stats'),
+    
     #report
     path('api/questionnaire/report/<str:user_id>/<str:questionnaire_type>/', QuestionnaireReportPDFView.as_view(), name='questionnaire-report'),
 

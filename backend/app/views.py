@@ -113,37 +113,278 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class MMPI2QuestionnaireStatsView(APIView):
+
+class ADHDQuestionnaireStatsView(APIView):
     """
-    API View to aggregate MMPI2 questionnaire data.
-    Returns counts of True and False responses for each question.
+    API View to aggregate ADHD questionnaire data.
+    Returns counts of responses for each question.
     """
     def get(self, request):
-        # List of MMPI2 questionnaire questions (model field names)
         questions = [
-            "rarelyWorryAboutHealth",
-            "alwaysTellTruth",
-            "feelTiredMostOfTheTime",
-            "feelPunishedWithoutCause",
-            "botheredByUpsetStomach",
-            "getLotOfHeadaches",
-            "likeToArrangeFlowers",
-            "someoneHasItInForMe",
-            "oftenDisturbingThoughts",
-            "hearThingsOthersCantHear",
-            "amHappierThanMostPeople",
-            "amEasilyEmbarrassed",
+            "troubleWrappingUpFinalDetails",
+            "difficultyGettingOrganized",
+            "problemsRememberingAppointments",
+            "avoidDelayingThoughtIntensiveTasks",
+            "fidgetOrSquirmWhenSitting",
+            "feelOverlyActiveCompelled",
+            "makeCarelessMistakes",
+            "difficultyKeepingAttention",
+            "difficultyConcentratingOnDirectSpeech",
+            "misplaceOrDifficultyFindingThings",
         ]
-        
+
+        # Possible responses
+        response_options = ["Never", "Rarely", "Sometimes", "Often", "Very Often"]
+
         data = {}
         for q in questions:
-            true_count = MMPI2Questionnaire.objects.filter(**{q: True}).count()
-            false_count = MMPI2Questionnaire.objects.filter(**{q: False}).count()
-            data[q] = {"True": true_count, "False": false_count}
-            logger.debug(f"Question: {q}, True: {true_count}, False: {false_count}")
-        
-        logger.info("MMPI2 Questionnaire statistics aggregated successfully.")
+            counts = {}
+            for option in response_options:
+                count = ADHD.objects.filter(**{q: option}).count()
+                counts[option] = count
+            data[q] = counts
+            logger.debug(f"Question: {q}, Counts: {counts}")
+
+        logger.info("ADHD Questionnaire statistics aggregated successfully.")
         return Response(data, status=status.HTTP_200_OK)
+
+class BDIQuestionnaireStatsView(APIView):
+    """
+    API View to aggregate BDI questionnaire data.
+    Returns counts of responses for each question.
+    """
+    def get(self, request):
+        questions = [
+            "feelingsOfSadness",
+            "thoughtsAboutFuture",
+            "definitionOfSuccess",
+            "abilityToExperiencePleasure",
+            "negativeSelfStatements",
+            "feelingsOfPunishment",
+            "disappointmentsInSelf",
+            "handlingSelfCriticism",
+            "thoughtsOfSelfHarm",
+            "frequencyOfCrying",
+        ]
+
+        # Define the actual response options for each question
+        response_options = {
+            "feelingsOfSadness": [
+                "I do not feel sad.",
+                "I feel sad.",
+                "I am sad all the time and I can't snap out of it.",
+                "I am so sad or unhappy that I can't stand it."
+            ],
+            "thoughtsAboutFuture": [
+                "I am not particularly discouraged about the future.",
+                "I feel discouraged about the future.",
+                "I feel I have nothing to look forward to.",
+                "I feel the future is hopeless and that things cannot improve."
+            ],
+            "definitionOfSuccess": [
+                "I do not feel like a failure",
+                "I feel I have failed more than the average person.",
+                "As I look back on my life, all I can see is a lot of failures.",
+                "I feel I am a complete failure as a person."
+            ],
+            "abilityToExperiencePleasure": [
+                "I get as much satisfaction out of things as I used to.",
+                "I don't enjoy things the way I used to.",
+                "I don't get real satisfaction out of anything anymore.",
+                "I am dissatisfied or bored with everything."
+            ],
+            "negativeSelfStatements": [
+                "I don't feel particularly guilty",
+                "I feel guilty a good part of the time.",
+                "I feel quite guilty most of the time.",
+                "I feel guilty all of the time."
+            ],
+            "feelingsOfPunishment": [
+                "I don't feel I am being punished.",
+                "I feel I may be punished.",
+                "I expect to be punished.",
+                "I feel I am being punished."
+            ],
+            "disappointmentsInSelf": [
+                "I don't feel disappointed in myself.",
+                "I am disappointed in myself.",
+                "I am disgusted with myself.",
+                "I hate myself"
+            ],
+            "handlingSelfCriticism": [
+                "I don't feel I am any worse than anybody else.",
+                "I am critical of myself for my weaknesses or mistakes.",
+                "I blame myself all the time for my faults.",
+                "I blame myself for everything bad that happens."
+            ],
+            "thoughtsOfSelfHarm": [
+                "I don't have any thoughts of killing myself.",
+                "I have thoughts of killing myself, but I would not carry them out.",
+                "I would like to kill myself.",
+                "I would kill myself if I had the chance."
+            ],
+            "frequencyOfCrying": [
+                "I don't cry any more than usual.",
+                "I cry more now than I used to.",
+                "I cry all the time now.",
+                "I used to be able to cry, but now I can't cry even though I want to."
+            ],
+        }
+
+        data = {}
+        for q in questions:
+            counts = {}
+            options = response_options.get(q, [])
+            for option in options:
+                count = BDI.objects.filter(**{q: option}).count()
+                counts[option] = count
+            data[q] = counts
+
+        return Response(data, status=status.HTTP_200_OK)
+
+class OCIRQuestionnaireStatsView(APIView):
+    """
+    API View to aggregate OCIR questionnaire data.
+    Returns counts of responses for each question.
+    """
+    def get(self, request):
+        questions = [
+            "savedTooManyThings",
+            "checkThingsMoreOften",
+            "upsetIfNotArrangedProperly",
+            "compelledToCount",
+            "difficultToTouchTouchedObjects",
+            "difficultToControlThoughts",
+            "collectUnnecessaryThings",
+            "repeatedlyCheckItems",
+            "upsetIfOthersChangeArrangement",
+            "feelCompelledToRepeatNumbers",
+        ]
+
+        # Correct response options based on your data
+        response_options = ["Not at all", "A little", "Moderately", "A lot", "Extremely"]
+
+        data = {}
+        for q in questions:
+            counts = {}
+            for option in response_options:
+                count = OCIR.objects.filter(**{q: option}).count()
+                counts[option] = count
+            data[q] = counts
+
+        return Response(data, status=status.HTTP_200_OK)
+
+class EnneagramQuestionnaireStatsView(APIView):
+    """
+    API View to aggregate Enneagram questionnaire data.
+    Returns counts of responses for each question.
+    """
+    def get(self, request):
+        questions = [
+            "creativeArtisticView",
+            "feelDifferentFromOthers",
+            "experienceMelancholy",
+            "overlySensitive",
+            "feelSomethingIsMissing",
+            "feelEnviousOfOthers",
+            "thriveInCreativeEnvironments",
+            "canBecomeWithdrawnWhenMisunderstood",
+            "romanticLonging",
+            "caughtInFantasyWorld",
+            "enjoyUniqueElegantThings",
+            "moodyWhenStressed",
+            "reflectiveAndSearchForMeaning",
+            "striveToBeUnique",
+            "mannersAndGoodTaste",
+            "seenAsOverlyDramatic",
+            "importantToUnderstandFeelings",
+        ]
+
+        # Correct response options based on your data
+        response_options = [
+            "Almost Never 1",
+            "Rarely 2",
+            "Sometimes 3",
+            "Frequently 4",
+            "Almost Always 5"
+        ]
+
+        data = {}
+        for q in questions:
+            counts = {}
+            for option in response_options:
+                count = ENNEAGRAM.objects.filter(**{q: option}).count()
+                counts[option] = count
+            data[q] = counts
+
+        return Response(data, status=status.HTTP_200_OK)
+
+
+
+
+class GADQuestionnaireStatsView(APIView):
+    """
+    API View to aggregate GAD questionnaire data.
+    Returns counts of responses for each question.
+    """
+    def get(self, request):
+        # List of GAD questionnaire questions (model field names)
+        questions = [
+            "feelingNervous",
+            "inabilityToControlWorrying",
+            "excessiveWorrying",
+            "troubleRelaxing",
+            "restlessness",
+            "irritability",
+            "fearOfSomethingAwful",
+        ]
+
+        # Possible responses based on your model (e.g., "Not at all", "Several days", etc.)
+        response_options = ["Not at all", "Several days", "More than half the days", "Nearly every day"]
+
+        data = {}
+        for q in questions:
+            counts = {}
+            for option in response_options:
+                count = GAD.objects.filter(**{q: option}).count()
+                counts[option] = count
+            data[q] = counts
+            logger.debug(f"Question: {q}, Counts: {counts}")
+
+        logger.info("GAD Questionnaire statistics aggregated successfully.")
+        return Response(data, status=status.HTTP_200_OK)
+    
+# class MMPI2QuestionnaireStatsView(APIView):
+#     """
+#     API View to aggregate MMPI2 questionnaire data.
+#     Returns counts of True and False responses for each question.
+#     """
+#     def get(self, request):
+#         # List of MMPI2 questionnaire questions (model field names)
+#         questions = [
+#             "rarelyWorryAboutHealth",
+#             "alwaysTellTruth",
+#             "feelTiredMostOfTheTime",
+#             "feelPunishedWithoutCause",
+#             "botheredByUpsetStomach",
+#             "getLotOfHeadaches",
+#             "likeToArrangeFlowers",
+#             "someoneHasItInForMe",
+#             "oftenDisturbingThoughts",
+#             "hearThingsOthersCantHear",
+#             "amHappierThanMostPeople",
+#             "amEasilyEmbarrassed",
+#         ]
+        
+#         data = {}
+#         for q in questions:
+#             true_count = MMPI2Questionnaire.objects.filter(**{q: True}).count()
+#             false_count = MMPI2Questionnaire.objects.filter(**{q: False}).count()
+#             data[q] = {"True": true_count, "False": false_count}
+#             logger.debug(f"Question: {q}, True: {true_count}, False: {false_count}")
+        
+#         logger.info("MMPI2 Questionnaire statistics aggregated successfully.")
+#         return Response(data, status=status.HTTP_200_OK)
 
 class QuestionnaireReportPDFView(APIView):
     def get(self, request, user_id, questionnaire_type):
