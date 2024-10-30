@@ -35,7 +35,7 @@ export default function TopNav() {
     <>
       <Navbar expand="lg" className="custom-navbar" sticky="top">
         <Container fluid>
-          <Navbar.Brand href="/landing">Therapy Is Healing</Navbar.Brand>
+          <Navbar.Brand href="/">Therapy Is Healing</Navbar.Brand>
 
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav" >

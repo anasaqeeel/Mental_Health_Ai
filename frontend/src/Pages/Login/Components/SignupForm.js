@@ -35,7 +35,7 @@ const SignupForm = () => {
         <div>
             <form onSubmit={handleSubmit}>
                 {error && <p style={{ color: 'red' }}>{error}</p>}
-                {/* Email Field */}
+                
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <FloatingLabel
                         controlId="floatingInput"
@@ -51,7 +51,7 @@ const SignupForm = () => {
                         />
                     </FloatingLabel>
                 </Form.Group>
-                {/* Password Field */}
+                
                 <Form.Group className="mb-3" controlId="formBasicPassword">
                     <FloatingLabel controlId="floatingPassword" label="Password">
                         <Form.Control

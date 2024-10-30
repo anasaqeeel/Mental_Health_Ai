@@ -57,8 +57,20 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              {/* Define other routes similarly using <PageWrapper> */}
-              {/* Add more routes as per your setup */}
+              {/* <Route
+                path="/login/landing"
+                element={
+                  <PrivateRoute>
+                    <PageWrapper>
+                      <Carousel />
+                      <Landing />
+                      <GeneralChat />
+                      <Footer />
+                    </PageWrapper>
+                  </PrivateRoute>
+                }
+              /> */}
+              
               <Route
                 path="/landing/questionnaire"
                 element={
@@ -204,7 +216,7 @@ function App() {
                 }
               />
 
-              {/* Video Chat Route */}
+              
               <Route
                 path="/landing/video-chat"
                 element={
@@ -217,7 +229,7 @@ function App() {
                 }
               />
 
-              {/* Visualization Route */}
+              
               <Route
                 path="/visualize"
                 element={
@@ -229,7 +241,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              {/* Add additional routes */}
+             
             </Routes>
           </AnimatePresence>
         </Router>

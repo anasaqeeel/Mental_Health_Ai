@@ -84,7 +84,7 @@ from reportlab.pdfgen import canvas
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import UserProfile, ADHD, GAD, MDQ  # Ensure MDQ is imported
+from .models import UserProfile, ADHD, GAD, MDQ  
 
 from django.http import HttpResponse
 from reportlab.lib.pagesizes import letter
@@ -92,7 +92,7 @@ from reportlab.pdfgen import canvas
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import UserProfile, ADHD, GAD, MDQ, BDI  # Ensure BDI is imported
+from .models import UserProfile, ADHD, GAD, MDQ, BDI  
 
 from datetime import datetime
 from django.http import HttpResponse
@@ -109,7 +109,7 @@ from .models import (
 
 import logging
 
-# Configure logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -133,7 +133,7 @@ class ADHDQuestionnaireStatsView(APIView):
             "misplaceOrDifficultyFindingThings",
         ]
 
-        # Possible responses
+        
         response_options = ["Never", "Rarely", "Sometimes", "Often", "Very Often"]
 
         data = {}
@@ -167,7 +167,7 @@ class BDIQuestionnaireStatsView(APIView):
             "frequencyOfCrying",
         ]
 
-        # Define the actual response options for each question
+        
         response_options = {
             "feelingsOfSadness": [
                 "I do not feel sad.",
@@ -261,7 +261,7 @@ class OCIRQuestionnaireStatsView(APIView):
             "feelCompelledToRepeatNumbers",
         ]
 
-        # Correct response options based on your data
+        
         response_options = ["Not at all", "A little", "Moderately", "A lot", "Extremely"]
 
         data = {}
@@ -300,7 +300,7 @@ class EnneagramQuestionnaireStatsView(APIView):
             "importantToUnderstandFeelings",
         ]
 
-        # Correct response options based on your data
+        
         response_options = [
             "Almost Never 1",
             "Rarely 2",
@@ -328,7 +328,7 @@ class GADQuestionnaireStatsView(APIView):
     Returns counts of responses for each question.
     """
     def get(self, request):
-        # List of GAD questionnaire questions (model field names)
+        
         questions = [
             "feelingNervous",
             "inabilityToControlWorrying",
@@ -339,7 +339,7 @@ class GADQuestionnaireStatsView(APIView):
             "fearOfSomethingAwful",
         ]
 
-        # Possible responses based on your model (e.g., "Not at all", "Several days", etc.)
+        
         response_options = ["Not at all", "Several days", "More than half the days", "Nearly every day"]
 
         data = {}
@@ -391,7 +391,7 @@ class QuestionnaireReportPDFView(APIView):
         date_today = datetime.now().strftime("%B %d, %Y")
         logger.info(f"Received request for report generation. User ID: {user_id}, Questionnaire Type: {questionnaire_type}")
 
-        # Fetch the user's profile by firebase_uid
+        
         try:
             user_profile = UserProfile.objects.get(firebase_uid=user_id)
             logger.info(f"Fetched UserProfile: {user_profile}")
@@ -399,7 +399,7 @@ class QuestionnaireReportPDFView(APIView):
             logger.error(f"UserProfile not found for user_id: {user_id}")
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Mapping of questionnaire types to their respective model classes and filter logic
+       
         questionnaire_models = {
             "ADHD": {"model": ADHD, "filter_key": "user", "filter_value": user_profile},
             "GAD": {"model": GAD, "filter_key": "user", "filter_value": user_profile},
@@ -412,7 +412,7 @@ class QuestionnaireReportPDFView(APIView):
             "ENNEAGRAM": {"model": ENNEAGRAM, "filter_key": "user", "filter_value": user_profile}
         }
 
-        # Validate the questionnaire type
+        
         model_info = questionnaire_models.get(questionnaire_type.upper())
         if not model_info:
             logger.error(f"Unsupported questionnaire type: {questionnaire_type}")
@@ -421,10 +421,10 @@ class QuestionnaireReportPDFView(APIView):
         model_class = model_info["model"]
         filter_kwargs = {model_info["filter_key"]: model_info["filter_value"]}
 
-        # Determine ordering field: use 'created_at' if exists, else 'id'
+        
         ordering_field = '-created_at' if hasattr(model_class, 'created_at') else '-id'
 
-        # Fetch the most recent questionnaire entry
+        
         try:
             queryset = model_class.objects.filter(**filter_kwargs).order_by(ordering_field)
             questionnaire = queryset.first()
@@ -436,7 +436,7 @@ class QuestionnaireReportPDFView(APIView):
             logger.exception(f"Error fetching {questionnaire_type} Questionnaire: {str(e)}")
             return Response({"error": f"Error fetching {questionnaire_type} Questionnaire"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        # Create PDF response
+        
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{questionnaire_type}_Report_{user_id}.pdf"'
 
@@ -455,28 +455,28 @@ class QuestionnaireReportPDFView(APIView):
 
         story = []
 
-        # Header
+        
         story.append(Paragraph("Mental Health Report", styles['TitleStyle']))
         story.append(Paragraph("Therapy is Healing", styles['SubtitleStyle']))
 
-        # Date
+        
         story.append(Paragraph(f"Date: {date_today}", styles['DateStyle']))
         story.append(Spacer(1, 12))
 
-        # Line Separator
+        
         story.append(HRFlowable(width="100%", thickness=1, lineCap='round', color='black'))
         story.append(Spacer(1, 12))
 
-        # Section Title
+        
         story.append(Paragraph(f"{questionnaire_type.upper()} Questionnaire", styles['SectionTitle']))
 
-        # Helper function to add question and answer
+        
         def add_question_answer(question, answer):
             story.append(Paragraph(question, styles['QuestionStyle']))
             story.append(Paragraph(str(answer), styles['AnswerStyle']))
             story.append(Spacer(1, 6))
 
-        # Add content based on questionnaire type
+        
         if questionnaire_type.upper() == "ADHD":
             add_question_answer("Trouble Wrapping Up Final Details:", questionnaire.troubleWrappingUpFinalDetails)
             add_question_answer("Difficulty Getting Organized:", questionnaire.difficultyGettingOrganized)
@@ -603,17 +603,17 @@ class QuestionnaireReportPDFView(APIView):
             logger.error(f"Unsupported questionnaire type: {questionnaire_type}")
             return Response({"error": "Unsupported questionnaire type"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Build the PDF
+        
         try:
             doc.build(story)
         except Exception as e:
             logger.exception(f"Error building PDF: {str(e)}")
             return Response({"error": "Error generating PDF"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        # Move the buffer's position to the beginning
+        
         buffer.seek(0)
 
-        # Write the buffer to the response
+        
         response.write(buffer.getvalue())
         buffer.close()
 
@@ -625,14 +625,14 @@ class QuestionnaireReportPDFView(APIView):
         date_today = datetime.now().strftime("%B %d, %Y")
         print(f"Received request for report generation. User ID: {user_id}, Questionnaire Type: {questionnaire_type}")
 
-        # Fetch the user's profile by firebase_uid
+        
         try:
             user_profile = UserProfile.objects.get(firebase_uid=user_id)
         except UserProfile.DoesNotExist:
             print(f"UserProfile not found for user_id: {user_id}")
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Mapping of questionnaire types to their respective model classes and filter logic
+        
         questionnaire_models = {
             "ADHD": {"model": ADHD, "filter_key": "user", "filter_value": user_profile},
             "GAD": {"model": GAD, "filter_key": "user", "filter_value": user_profile},
@@ -645,7 +645,7 @@ class QuestionnaireReportPDFView(APIView):
             "ENNEAGRAM": {"model": ENNEAGRAM, "filter_key": "user", "filter_value": user_profile}
         }
 
-        # Validate the questionnaire type
+        
         model_info = questionnaire_models.get(questionnaire_type.upper())
         if not model_info:
             print(f"Unsupported questionnaire type: {questionnaire_type}")
@@ -654,7 +654,7 @@ class QuestionnaireReportPDFView(APIView):
         model_class = model_info["model"]
         filter_kwargs = {model_info["filter_key"]: model_info["filter_value"]}
 
-        # Fetch the most recent questionnaire entry by ordering descending by 'id'
+        
         try:
             queryset = model_class.objects.filter(**filter_kwargs).order_by('-created_at').first()
             print(f"Queryset for {questionnaire_type.upper()}: {[q.id for q in queryset]}")
@@ -668,7 +668,7 @@ class QuestionnaireReportPDFView(APIView):
             print(f"Error fetching {questionnaire_type} Questionnaire: {str(e)}")
             return Response({"error": f"Error fetching {questionnaire_type} Questionnaire"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        # Create PDF response
+        
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{questionnaire_type}_Report_{user_id}.pdf"'
 
@@ -687,15 +687,15 @@ class QuestionnaireReportPDFView(APIView):
 
         story = []
 
-        # Header
+        
         story.append(Paragraph("Mental Health Report", styles['TitleStyle']))
         story.append(Paragraph("Therapy is Healing", styles['SubtitleStyle']))
 
-        # Date (Removed 'Created At')
+        
         story.append(Paragraph(f"Date: {date_today}", styles['DateStyle']))
         story.append(Spacer(1, 12))
 
-        # Line Separator
+        
         story.append(HRFlowable(width="100%", thickness=1, lineCap='round', color='black'))
         story.append(Spacer(1, 12))
 
@@ -1820,11 +1820,11 @@ class VideoViewSet(viewsets.ModelViewSet):
 
             video_to_audio(video_file, audio_file)
             text_output = audio_to_text(audio_file)
-            # Generate transcript
+            
             transcript = audio_to_text(audio_file)
             video_instance.transcript = transcript
 
-            # Perform emotion analysis
+            
             emotions = analyze_emotions(video_instance.video_file.path,interval=5)
             summary = summarize_emotions(emotions)
             video_instance.emotions_summary = summary
@@ -1846,16 +1846,16 @@ class UploadVideoView(APIView):
                 video_file = user_video.video.path
                 video_file = str(video_file)
 
-                # Define a new path for the remuxed video
+                
                 fixed_video_file = os.path.splitext(video_file)[0] + '_fixed.mp4'
 
-                # Set the path to ffmpeg
+                
                 ffmpeg_path = r"C:\Users\avira\OneDrive\Desktop\Github-Projects\TIET_Mental_Health\backend\ffmpeg\bin\ffmpeg.exe"
 
                 if not os.path.isfile(ffmpeg_path):
                     return Response({"error": "FFmpeg executable not found"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-                # Run ffmpeg to remux the video and fix metadata
+               
                 ffmpeg_remux_cmd = [ffmpeg_path, '-i', video_file, '-c', 'copy', fixed_video_file]
 
                 try:
@@ -1865,19 +1865,19 @@ class UploadVideoView(APIView):
                     print(f"Error remuxing video: {e}")
                     return Response({"error": "Failed to remux video"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-                # Further processing: audio extraction, emotion analysis, etc.
+                
 
                 audio_file = os.path.splitext(fixed_video_file)[0] + '_audio.wav'
-                # Step 1: Extract audio
+                
                 video_to_audio(fixed_video_file, audio_file)
 
-                # Step 2: Generate transcript
+                
                 transcript = audio_to_text(audio_file)
 
-                # Update the transcript field of the saved instance
+                
                 user_video.transcript = transcript
 
-                # Step 3: Analyze emotions in the video
+               
                 emotions = analyze_emotions(fixed_video_file, interval=3)
                 summary = summarize_emotions(emotions)
 
@@ -1891,10 +1891,10 @@ class ADHDViewSet(viewsets.ModelViewSet):
     queryset = ADHD.objects.all()
     serializer_class = ADHDSerializer
     def create(self, request, *args, **kwargs):
-        # Get the user by firebase_uid passed from the frontend
-        user_profile = UserProfile.objects.get(firebase_uid=request.data['user'])  # Ensure this exists
-        adhd_data = request.data.copy()  # Create a mutable copy of the data
-        adhd_data['user'] = user_profile.id  # Assign the user profile to the 'user' field
+        
+        user_profile = UserProfile.objects.get(firebase_uid=request.data['user'])  
+        adhd_data = request.data.copy()  
+        adhd_data['user'] = user_profile.id  
         
         serializer = self.get_serializer(data=adhd_data)
         serializer.is_valid(raise_exception=True)
@@ -1971,13 +1971,13 @@ def get_matched_professionals(request):
         specialization=prof.specialization
         spec_list=specialization.split(',')
 
-        # Specialization and tags matching
+       
         for diag in diag_list:
             for spec in spec_list:
                 if(diag==spec):
                     score+=50
 
-        #language matching
+        
         if prof.language1==questionnaire.preferredLang:
             score+=30
         elif prof.language2==questionnaire.preferredLang:
@@ -1985,21 +1985,21 @@ def get_matched_professionals(request):
         elif prof.language3==questionnaire.preferredLang:
             score+=10
 
-        #therapy spec
+        
         if prof.therapy_specification == questionnaire.typeOfTherapy:
             score += 10
     
         if prof.gender == questionnaire.providerGender:
             score += 15
-        # Add more criteria based on your matching algorithm
+       
 
         matched_professionals.append((prof, score))
 
-    # Sort professionals by score and select top 3
+   
     matched_professionals = sorted(matched_professionals, key=lambda x: x[1], reverse=True)[:3]
     matched_professionals = [prof[0] for prof in matched_professionals]
 
-    # Serialize and return the response
+    
     data = {
         'professionals': [
             {

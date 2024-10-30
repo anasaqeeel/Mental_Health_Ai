@@ -3,7 +3,7 @@ from django.utils import timezone
 
 
 class UserProfile(models.Model):
-   # Set a default value for firebase_uid in models.py
+   
     firebase_uid = models.CharField(max_length=100, unique=True)
     name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
@@ -16,7 +16,7 @@ class Video(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     video_file = models.FileField(upload_to='videos/')
     transcript = models.TextField(blank=True, null=True)
-    emotions_summary = models.JSONField(blank=True, null=True)  # Store as JSON
+    emotions_summary = models.JSONField(blank=True, null=True)  
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -48,8 +48,8 @@ class UserQuestionnaire(models.Model):
     tags=models.CharField(max_length=1000,null=True,blank=True)
 class ENNEAGRAM(models.Model):
     user = models.CharField(max_length=100)
-    creativeArtisticView = models.CharField(max_length=100)  # Creative and have an artistic view of life.
-    feelDifferentFromOthers = models.CharField(max_length=100)  # Feel different from others, as if “on the outside looking in.”
+    creativeArtisticView = models.CharField(max_length=100)  
+    feelDifferentFromOthers = models.CharField(max_length=100)  
     experienceMelancholy = models.CharField(max_length=100)  # Tend to experience more melancholy than most people I know.
     overlySensitive = models.CharField(max_length=100)  # Tend to be overly sensitive.
     feelSomethingIsMissing = models.CharField(max_length=100)  # Feel that something is missing in my life.

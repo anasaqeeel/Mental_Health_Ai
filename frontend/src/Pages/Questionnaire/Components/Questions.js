@@ -11,7 +11,7 @@ import questionsData from './quest.json';
 
 const Questionnaire = ({ questionnaireName, userId }) => {
 
-  console.log("Parent component userId:", userId);
+  // console.log("Parent component userId:", userId);
 
 
 
@@ -70,7 +70,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
       let data;
       let response;
 
-      // ENNEAGRAM
+      
       if (questionnaireName === 'ENNEAGRAM') {
         data = {
           user: userId || "1",
@@ -100,7 +100,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
         });
       }
 
-      // NPQ
+      
       if (questionnaireName === 'NPQ') {
         data = {
           user: userId || "1",
@@ -122,7 +122,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
         });
       }
 
-      // ADHD
+      
       if (questionnaireName === 'ADHD') {
         data = {
           user: userId || "1",
@@ -145,7 +145,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
         });
       }
 
-      // OCIR
+      
       if (questionnaireName === 'OCIR') {
         data = {
           user: userId || "1",
@@ -168,7 +168,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
         });
       }
 
-      // MDQ
+      
       if (questionnaireName === 'MDQ') {
         data = {
           user: userId || "1",
@@ -200,7 +200,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
         });
       }
 
-      // IBT
+     
       if (questionnaireName === 'IBT') {
         data = {
           user: userId || "1",
@@ -223,7 +223,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
         });
       }
 
-      // BDI
+      
       if (questionnaireName === 'BDI') {
         data = {
           user: userId || "1",
@@ -246,7 +246,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
         });
       }
 
-      // GAD
+      
       if (questionnaireName === 'GAD') {
         data = {
           user: userId || "1",
@@ -266,7 +266,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
         });
       }
 
-      // BFT
+      
       if (questionnaireName === 'BFT') {
         data = {
           user: userId || "1",
@@ -289,7 +289,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
         });
       }
 
-      // MMPI2
+     
       if (questionnaireName === 'MMPI2') {
         data = {
           user: userId || "1",
@@ -316,7 +316,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
 
       if (response && response.ok) {
         console.log(`${questionnaireName} Questionnaire submitted successfully`);
-        setIsCompleted(true);  // Enable the "View Submitted Questionnaire Report" button
+        setIsCompleted(true);  
       } else {
         const errorData = await response.json();
         console.error(`Failed to submit the ${questionnaireName} questionnaire`, errorData);
@@ -333,7 +333,7 @@ const Questionnaire = ({ questionnaireName, userId }) => {
       console.error("User ID is undefined");
       return;
     }
-    // Any other logic that needs userId to be defined
+    
   }, [userId]);
 
 
@@ -352,14 +352,14 @@ const Questionnaire = ({ questionnaireName, userId }) => {
       });
 
       if (response.ok) {
-        const blob = await response.blob();  // Get the PDF file blob from the response
-        const url = window.URL.createObjectURL(blob);  // Create a URL for the file
-        const link = document.createElement('a');  // Create an anchor element
+        const blob = await response.blob();  
+        const url = window.URL.createObjectURL(blob);  
+        const link = document.createElement('a');  
         link.href = url;
-        link.setAttribute('download', `${questionnaireName}_Report_${userId}.pdf`);  // Set the download file name
-        document.body.appendChild(link);  // Append the anchor to the body
-        link.click();  // Trigger the download
-        document.body.removeChild(link);  // Remove the anchor after download
+        link.setAttribute('download', `${questionnaireName}_Report_${userId}.pdf`);  
+        document.body.appendChild(link);  
+        link.click();  
+        document.body.removeChild(link);  
       } else {
         console.error("Failed to generate the report");
       }
@@ -491,13 +491,12 @@ const Questionnaire = ({ questionnaireName, userId }) => {
                     )}
                   </div>
 
-                  {/* Add the Generate Report Button */}
                   <div className="text-center mt-4">
                     <Button
                       variant="success"
                       onClick={generateReport}
                       className="shadow-sm"
-                      disabled={!isCompleted}  // Enable only after submission
+                      disabled={!isCompleted}  
                     >
                       View Submitted Questionnaire Report
                     </Button>

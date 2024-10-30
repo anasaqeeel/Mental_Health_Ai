@@ -1,9 +1,9 @@
 // frontend/src/Pages/Visualize/Visualization.jsx
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { Bar } from 'react-chartjs-2';
+// import { Bar } from 'react-chartjs-2';
 import { Container, Spinner, Alert, Form } from 'react-bootstrap';
-import React, { useEffect, useState } from 'react';
+// import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import {
     Chart as ChartJS,
@@ -15,17 +15,17 @@ import {
     Legend,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-import './Visualization.css'; // Create this CSS file for styling
+import './Visualization.css'; 
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ChartTitle, Tooltip, Legend);
 
 const Visualization = () => {
-    const [selectedQuestionnaire, setSelectedQuestionnaire] = useState('ADHD');
+    // const [selectedQuestionnaire, setSelectedQuestionnaire] = useState('ADHD');
     const [chartData, setChartData] = useState(null);
 
     const questionnaires = ['ADHD', 'GAD', 'BDI', 'OCIR', 'ENNEAGRAM'];
 
-    // Response options for each questionnaire
+    
     const questionnaireOptions = {
         ADHD: {
             options: ['Never', 'Rarely', 'Sometimes', 'Often', 'Very Often'],
@@ -132,10 +132,10 @@ const Visualization = () => {
     };
 
     // List of available questionnaires
-    const [questionnaires, setQuestionnaires] = useState([]);
+    // const [questionnaires, setQuestionnaires] = useState([]);
     const [selectedQuestionnaire, setSelectedQuestionnaire] = useState('');
 
-    // Initialize available questionnaires
+    
     useEffect(() => {
         fetchData();
     }, [selectedQuestionnaire]);
@@ -150,7 +150,7 @@ const Visualization = () => {
             const questionnaireData = questionnaireOptions[selectedQuestionnaire];
 
             if (questionnaireData.optionsPerQuestion) {
-                // For BDI, where options vary per question, create multiple charts
+                
                 const chartsArray = [];
                 const questions = questionnaireData.questions;
 
@@ -158,7 +158,7 @@ const Visualization = () => {
                     const questionData = data[questionKey];
                     const responseOptions = questionnaireData.options[questionKey];
 
-                    // Ensure all response options are included, even if count is zero
+                    
                     const counts = responseOptions.map((option) => questionData[option] || 0);
 
                     const chartData = {
@@ -177,7 +177,7 @@ const Visualization = () => {
 
                 setChartData({ multipleCharts: true, charts: chartsArray });
             } else {
-                // For questionnaires where all questions share the same options
+                
                 const labels = Object.keys(data).map((q) => formatLabel(q));
                 const responseOptions = questionnaireData.options;
 
@@ -206,7 +206,7 @@ const Visualization = () => {
     };
 
     const formatLabel = (label) => {
-        // Format the label by inserting spaces before capital letters
+        
         return label.replace(/([a-z])([A-Z])/g, '$1 $2');
     };
 
@@ -221,12 +221,12 @@ const Visualization = () => {
             'rgba(199, 199, 199, 0.6)',
             'rgba(83, 102, 255, 0.6)',
             'rgba(255, 99, 132, 0.6)',
-            // Add more colors if needed
+            
         ];
         if (numColors <= colors.length) {
             return colors.slice(0, numColors);
         } else {
-            // Generate additional colors if needed
+            
             const extraColors = [];
             for (let i = 0; i < numColors - colors.length; i++) {
                 const r = Math.floor(Math.random() * 256);
@@ -239,7 +239,7 @@ const Visualization = () => {
     };
 
     const getColor = (index) => {
-        const colors = getColors(20); // Adjust the number as needed
+        const colors = getColors(20);
         return colors[index % colors.length];
     };
 

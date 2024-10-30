@@ -1,34 +1,34 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Peer from 'peerjs';
-import './VideoChat.css'; // Create a CSS file for styling
+import './VideoChat.css'; 
 
 const VideoChat = () => {
-    const [peerId, setPeerId] = useState(''); // Local Peer ID
-    const [remotePeerId, setRemotePeerId] = useState(''); // Remote Peer ID
-    const [callStarted, setCallStarted] = useState(false); // Track if call has started
-    const [messages, setMessages] = useState([]); // Chat messages
-    const [message, setMessage] = useState(''); // Input message
+    const [peerId, setPeerId] = useState(''); 
+    const [remotePeerId, setRemotePeerId] = useState(''); 
+    const [callStarted, setCallStarted] = useState(false);
+    const [messages, setMessages] = useState([]); 
+    const [message, setMessage] = useState(''); 
 
-    const localVideoRef = useRef(null); // Reference for local video element
-    const remoteVideoRef = useRef(null); // Reference for remote video element
-    const peerInstance = useRef(null); // Reference to hold the PeerJS instance
-    const dataConnection = useRef(null); // Reference for data connection for chat
+    const localVideoRef = useRef(null); 
+    const remoteVideoRef = useRef(null); 
+    const peerInstance = useRef(null);
+    const dataConnection = useRef(null); 
 
     useEffect(() => {
-        // Initialize peer instance
+        
         peerInstance.current = new Peer();
 
-        // Handle peer open event
+        
         peerInstance.current.on('open', (id) => {
             setPeerId(id);
         });
 
-        // Handle incoming calls
+        
         peerInstance.current.on('call', (call) => {
             navigator.mediaDevices.getUserMedia({ video: true, audio: true })
                 .then((stream) => {
                     localVideoRef.current.srcObject = stream;
-                    call.answer(stream); // Answer the call with the stream
+                    call.answer(stream);
 
                     call.on('stream', (remoteStream) => {
                         remoteVideoRef.current.srcObject = remoteStream;
@@ -37,7 +37,7 @@ const VideoChat = () => {
                 .catch((error) => console.error('Failed to get local stream', error));
         });
 
-        // Handle incoming data connection
+        
         peerInstance.current.on('connection', (conn) => {
             dataConnection.current = conn;
             conn.on('data', (data) => {
@@ -52,7 +52,7 @@ const VideoChat = () => {
         };
     }, []);
 
-    // Initiate a call to the remote peer
+    
     const startCall = () => {
         navigator.mediaDevices.getUserMedia({ video: true, audio: true })
             .then((stream) => {
@@ -61,7 +61,7 @@ const VideoChat = () => {
                 const call = peerInstance.current.call(remotePeerId, stream);
                 setCallStarted(true);
 
-                // Establish a data connection for chat
+
                 const conn = peerInstance.current.connect(remotePeerId);
                 dataConnection.current = conn;
 
@@ -85,12 +85,12 @@ const VideoChat = () => {
             .catch((error) => console.error('Failed to get local stream', error));
     };
 
-    // Send a chat message to the remote peer
+    
     const sendMessage = () => {
         if (dataConnection.current && message.trim() !== '') {
             dataConnection.current.send(message);
             setMessages((prevMessages) => [...prevMessages, { sender: 'You', text: message }]);
-            setMessage(''); // Clear the input field
+            setMessage('');
         }
     };
 
