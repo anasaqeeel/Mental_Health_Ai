@@ -459,7 +459,7 @@ class QuestionnaireReportPDFView(APIView):
         story.append(Paragraph("Mental Health Report", styles['TitleStyle']))
         story.append(Paragraph("Therapy is Healing", styles['SubtitleStyle']))
 
-        
+        story.append(Paragraph("Results from AI", styles['TitleStyle']))
         story.append(Paragraph(f"Date: {date_today}", styles['DateStyle']))
         story.append(Spacer(1, 12))
 
@@ -690,7 +690,7 @@ class QuestionnaireReportPDFView(APIView):
         
         story.append(Paragraph("Mental Health Report", styles['TitleStyle']))
         story.append(Paragraph("Therapy is Healing", styles['SubtitleStyle']))
-
+        story.append(Paragraph("Results from AI", styles['TitleStyle']))
         
         story.append(Paragraph(f"Date: {date_today}", styles['DateStyle']))
         story.append(Spacer(1, 12))
@@ -907,7 +907,7 @@ class QuestionnaireReportPDFView(APIView):
         # Header
         story.append(Paragraph("Mental Health Report", styles['TitleStyle']))
         story.append(Paragraph("Therapy is Healing", styles['SubtitleStyle']))
-
+        story.append(Paragraph("Results from AI", styles['TitleStyle']))
         # Date (Removed 'Created At')
         story.append(Paragraph(f"Date: {date_today}", styles['DateStyle']))
         story.append(Spacer(1, 12))
@@ -1128,6 +1128,7 @@ class QuestionnaireReportPDFView(APIView):
         # Header
         story.append(Paragraph("Mental Health Report", styles['TitleStyle']))
         story.append(Paragraph("Therapy is Healing", styles['SubtitleStyle']))
+        story.append(Paragraph("Results from AI", styles['TitleStyle']))
 
         # Date (Removed 'Created At')
         story.append(Paragraph(f"Date: {date_today}", styles['DateStyle']))
@@ -1268,7 +1269,8 @@ class QuestionnaireReportPDFView(APIView):
             add_question_answer("Manners And Good Taste:", questionnaire.mannersAndGoodTaste)
             add_question_answer("Seen As Overly Dramatic:", questionnaire.seenAsOverlyDramatic)
             add_question_answer("Important To Understand Feelings:", questionnaire.importantToUnderstandFeelings)
-
+        story.append(Paragraph("Results from AI", styles['TitleStyle']))
+        
         # Build the PDF
         doc.build(story)
 
@@ -1349,6 +1351,7 @@ class QuestionnaireReportPDFView(APIView):
         # Header
         story.append(Paragraph("Mental Health Report", styles['TitleStyle']))
         story.append(Paragraph("Therapy is Healing", styles['SubtitleStyle']))
+        story.append(Paragraph("Results from AI", styles['TitleStyle']))
 
         # Date and Created At (if available)
         story.append(Paragraph(f"Date: {date_today}", styles['DateStyle']))
@@ -1790,7 +1793,7 @@ class QuestionnaireReportPDFView(APIView):
             add_question_answer("Manners And Good Taste:", questionnaire.mannersAndGoodTaste)
             add_question_answer("Seen As Overly Dramatic:", questionnaire.seenAsOverlyDramatic)
             add_question_answer("Important To Understand Feelings:", questionnaire.importantToUnderstandFeelings)
-
+        # story.append(Paragraph(f"Generated From AI", styles['SectionTitle']))
         # Build the PDF
         doc.build(story)
 

@@ -28,8 +28,11 @@ export default function TopNav() {
   };
 
   const handleVisualizeClick = () => {
-    navigate('/visualize');
+    navigate('/landing/visualize');
   };
+  // const handleHomeClick = () => {
+  //   navigate('/');
+  // };
 
   return (
     <>

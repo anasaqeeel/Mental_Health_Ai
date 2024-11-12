@@ -28,19 +28,19 @@ const pageVariants = {
 const pageTransition = {
   type: "tween",
   ease: "anticipate",
-  duration: 0.8,
+  duration: 1.2,
 };
 
 function App() {
-  // const location = useLocation();
+  const location = useLocation();
 
   return (
     <div className="App">
       <AuthProvider>
-        <Router>
+        {/* <Router> */}
           <TopNav />
           <AnimatePresence mode="wait">
-            <Routes >
+            <Routes location={location} key={location.pathname}>
               <Route path="/" element={<PageWrapper><Login /></PageWrapper>} />
               <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
 
@@ -57,20 +57,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              {/* <Route
-                path="/login/landing"
-                element={
-                  <PrivateRoute>
-                    <PageWrapper>
-                      <Carousel />
-                      <Landing />
-                      <GeneralChat />
-                      <Footer />
-                    </PageWrapper>
-                  </PrivateRoute>
-                }
-              /> */}
-              
+
               <Route
                 path="/landing/questionnaire"
                 element={
@@ -82,6 +69,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
+
               <Route
                 path="/landing/SRT"
                 element={
@@ -93,6 +81,8 @@ function App() {
                   </PrivateRoute>
                 }
               />
+
+              {/* Additional routes with animations */}
               <Route
                 path="/landing/SRT/ADHD"
                 element={
@@ -104,6 +94,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
+
               <Route
                 path="/landing/SRT/BDI"
                 element={
@@ -115,6 +106,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
+
               <Route
                 path="/landing/SRT/OCIR"
                 element={
@@ -126,6 +118,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
+
               <Route
                 path="/landing/SRT/MDQ"
                 element={
@@ -137,6 +130,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
+
               <Route
                 path="/landing/SRT/GAD"
                 element={
@@ -148,6 +142,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
+
               <Route
                 path="/landing/PT"
                 element={
@@ -159,6 +154,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
+
               <Route
                 path="/landing/PT/BFT"
                 element={
@@ -170,6 +166,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
+
               <Route
                 path="/landing/PT/MMPI"
                 element={
@@ -181,6 +178,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
+
               <Route
                 path="/landing/PT/NPQ"
                 element={
@@ -192,6 +190,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
+
               <Route
                 path="/landing/PT/ENNEAGRAM"
                 element={
@@ -203,20 +202,19 @@ function App() {
                   </PrivateRoute>
                 }
               />
+
               <Route
                 path="/landing/PT/IBT"
                 element={
                   <PrivateRoute>
                     <PageWrapper>
                       <Questionnaire questionnaireName="IBT" />
-                      {/* <Questionnaire questions={questions} options={options} /> */}
                       <Footer />
                     </PageWrapper>
                   </PrivateRoute>
                 }
               />
 
-              
               <Route
                 path="/landing/video-chat"
                 element={
@@ -229,9 +227,8 @@ function App() {
                 }
               />
 
-              
               <Route
-                path="/visualize"
+                path="/landing/visualize"
                 element={
                   <PrivateRoute>
                     <PageWrapper>
@@ -241,10 +238,9 @@ function App() {
                   </PrivateRoute>
                 }
               />
-             
             </Routes>
           </AnimatePresence>
-        </Router>
+        {/* </Router> */}
       </AuthProvider>
     </div>
   );

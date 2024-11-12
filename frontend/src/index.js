@@ -3,19 +3,22 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { AuthProvider } from './Pages/Login/Components/AuthContext'; // Import AuthProvider
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <AuthProvider> 
-      <App />
+    <AuthProvider>
+      <Router>
+        <App />
+      </Router>
     </AuthProvider>
   </React.StrictMode>
 );
 if (module.hot) {
   module.hot.accept();
-   }
+}
 
 
 reportWebVitals();
